@@ -5,7 +5,7 @@
   "license": [
     "MIT"
   ],
-  "type": "project",
+  "type": "library",
   "keywords": [
     "php",
     "mock",
@@ -13,10 +13,6 @@
     "test",
     "mockery"
   ],
-  "config": {
-    "bin-dir": "vendor/bin",
-    "preferred-install": "dist"
-  },
   "authors": [
     {
       "name": "Abdulkadir(dilo) sürücü",
