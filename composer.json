@@ -1,9 +1,33 @@
 {
-    "autoload": {
-        "psr-4": {
-            "Zeus\\Mock\\": "src/"
-        }
-    },
+  "name": "zeus/mock",
+  "description": "This library allows you to create mock objects.",
+  "minimum-stability": "stable",
+  "license": [
+    "MIT"
+  ],
+  "type": "project",
+  "keywords": [
+    "php",
+    "mock",
+    "mvc",
+    "test",
+    "mockery"
+  ],
+  "config": {
+    "bin-dir": "vendor/bin",
+    "preferred-install": "dist"
+  },
+  "authors": [
+    {
+      "name": "Abdulkadir(dilo) sürücü",
+      "email": "berxudar@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Zeus\\Mock\\": "src/"
+    }
+  },
   "require": {
     "ext-pdo": "*"
   }
