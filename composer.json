@@ -1,0 +1,10 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Zeus\\Mock\\": "src/"
+        }
+    },
+  "require": {
+    "ext-pdo": "*"
+  }
+}
