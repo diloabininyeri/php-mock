@@ -188,19 +188,51 @@ class Person
     }
 }
 
-function get_name(Person $person): string
+function get_name(PersonInterface $person): string
 {
     return $person->getName();
 }
 
 
 $mockFactory = new MockFactory();
-$mockPerson = $mockFactory->createMock(Person::class);
+$mockPerson = $mockFactory->createMock(PersonInterface::class);
 $mockFactory->mockMethod('getName', function () {
     return 'Mocked Person';
 });
-echo get_name(new Person());//Dilo surucu
+echo get_name(new PersonInterface());//Dilo surucu
 echo get_name($mockPerson);//Mocked Person
-var_dump($mockPerson instanceof Person); //true
+var_dump($mockPerson instanceof PersonInterface); //true
 ```
+### MockFactory - Mocking Interfaces Example
 
+### Overview
+
+MockFactory is a powerful tool for mocking interfaces in PHP, allowing you to create mock instances and customize their behavior for unit testing. It ensures that mocked objects adhere to the expected type and guarantees compatibility with type hinting and `instanceof` checks.
+
+### Example Usage - Mocking Interfaces
+
+### Example
+
+```php
+use Zeus\Mock\MockFactory;
+
+interface PersonInterface
+{
+    public function getName(): string;
+}
+
+$mockFactory = new MockFactory();
+
+// Create a mock instance of PersonInterface
+$personService = $mockFactory->createMock(PersonInterface::class);
+
+// Mock the getName method
+$mockFactory->mockMethod('getName', fn(): string => 'dilo surucu');
+
+function get_person(PersonInterface $person): string
+{
+    return $person->getName();
+}
+
+echo get_person($personService); // dilo surucu
+```
