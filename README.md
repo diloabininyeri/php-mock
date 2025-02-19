@@ -45,7 +45,7 @@ $mockFactory = new MockFactory();
 $mockLogger = $mockFactory->createMock(Logger::class);
 
 // Mock the log method
-$mockFactory->mockMethod('log', fn($message) => 'mocked log: ' . $message);
+$mockFactory->mockMethod('log', fn($message) =>print 'mocked log: ' . $message);
 
 // Use the mock interface
 echo $mockLogger->log('Test');  // Outputs 'mocked log: Test'
@@ -73,7 +73,7 @@ $mockFactory = new MockFactory();
 $mockLogger = $mockFactory->createMock(Logger::class);
 
 // Mock the saveData method
-$mockFactory->mockMethod('log', fn($message) => 'mocked log: ' . $message);
+$mockFactory->mockMethod('log', fn($message) =>print 'mocked log: ' . $message);
 
 // Create the mock DatabaseService with the mocked Logger
 $mockDatabaseService = $mockFactory->createMock(DatabaseService::class);
