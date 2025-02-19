@@ -164,7 +164,7 @@ $mockFactory = new MockFactory();
 
 // Create a mock Logger interface
 $mockLogger = $mockFactory->createMock(Logger::class);
-$mockFactory->mockMethod('log', fn($message) => 'mocked log: ' . $message);
+$mockFactory->mockMethod('log', fn($message) =>print 'mocked log: ' . $message);
 
 // Create a mock DatabaseService with the mocked Logger
 $mockDatabaseService = $mockFactory->createMock(DatabaseService::class,[
@@ -178,4 +178,29 @@ $mockDatabaseService->saveData('Test Data');  // Outputs 'mocked log: Data saved
 ```
 This example class shows how to create mocks for both interfaces and concrete classes, including the use of mocked methods, 
 type hinting, and checking instance types using `instanceof`.
+
+```php
+class Person
+{
+    public function getName(): string
+    {
+        return 'Dilo surucu';
+    }
+}
+
+function get_name(Person $person): string
+{
+    return $person->getName();
+}
+
+
+$mockFactory = new MockFactory();
+$mockPerson = $mockFactory->createMock(Person::class);
+$mockFactory->mockMethod('getName', function () {
+    return 'Mocked Person';
+});
+echo get_name(new Person());//Dilo surucu
+echo get_name($mockPerson);//Mocked Person
+var_dump($mockPerson instanceof Person); //true
+```
 
