@@ -23,20 +23,19 @@ class MockFactory
      * @return T
      * @throws ReflectionException
      */
-    public function createMock(string $originalClass): object
+    public function createMock(string $originalClass, array $constructParameters = []): object
     {
         $mockClassName = $this->generateMockClassName($originalClass);
-
         if (interface_exists($originalClass)) {
             eval($this->generateMockInterfaceClassCode($mockClassName, $originalClass));
         } else {
             eval($this->generateMockClassCode($mockClassName, $originalClass));
         }
-
-        return new $mockClassName($this);
+        return new $mockClassName($this, $constructParameters);
     }
 
     /**
+     * @noinspection PhpUnused
      * @param string $methodName
      * @param Closure $closure
      * @return $this
@@ -57,14 +56,19 @@ class MockFactory
     }
 
     /**
+     * @noinspection PhpUnused
      * @param string $methodName
      * @param array $args
      * @return mixed
      */
-    public function invokeMockedMethod(string $methodName, array $args): mixed
+    public function invokeMockedMethod(string $methodName, array $args = []): mixed
     {
-        return call_user_func_array($this->methodMocks[$methodName], $args);
+        if ($this->hasMethodMock($methodName)) {
+            return call_user_func_array($this->methodMocks[$methodName], $args);
+        }
+        throw new MockMethodNotFoundException("Method $methodName is not mocked.");
     }
+
 
     /**
      * @param string $originalClass
@@ -86,15 +90,30 @@ class MockFactory
         $reflection = new ReflectionClass($originalClass);
         $mockCode = "class $mockClassName extends $originalClass {\n";
         $mockCode .= "private \$mockFactory;\n";
-        $mockCode .= "public function __construct(\$mockFactory) { \$this->mockFactory = \$mockFactory; }\n";
+
+        if ($reflection->hasMethod('__construct')) {
+            $mockCode .= "public function __construct(\$mockFactory, array \$params = []) {\n";
+            $mockCode .= "    \$this->mockFactory = \$mockFactory;\n";
+            $mockCode .= "    parent::__construct(...\$params);\n";
+        } else {
+            $mockCode .= "public function __construct(\$mockFactory) {\n";
+            $mockCode .= "    \$this->mockFactory = \$mockFactory;\n";
+        }
+        $mockCode .= "}\n";
 
         foreach ($reflection->getMethods() as $method) {
+            if ($method->getName() === '__construct') {
+                continue;
+            }
             $mockCode .= $this->generateMethodOverride($method);
         }
+
+        $mockCode .= $this->generateCallMethod();
 
         $mockCode .= "}";
         return $mockCode;
     }
+
 
     /**
      * @param string $mockClassName
@@ -125,12 +144,14 @@ class MockFactory
     private function generateMethodOverride(ReflectionMethod $method, bool $callParent = true): string
     {
         $methodName = $method->getName();
-        $returnType = $method->hasReturnType() ? ': ' . $method->getReturnType()->getName() : '';
+        $returnType = $method->hasReturnType() ? ': ' . $method->getReturnType()?->getName() : '';
+
+        $isVoid = $method->hasReturnType() && $method->getReturnType()?->getName() === 'void';
 
         $parameters = [];
         $arguments = [];
         foreach ($method->getParameters() as $param) {
-            $type = $param->hasType() ? $param->getType()->getName() . ' ' : '';
+            $type = $param->hasType() ? $param->getType()?->getName() . ' ' : '';
             $name = '$' . $param->getName();
             $parameters[] = $type . $name;
             $arguments[] = $name;
@@ -140,16 +161,37 @@ class MockFactory
 
         $mockCode = "public function $methodName($paramList)$returnType {\n";
         $mockCode .= "    if (\$this->mockFactory->hasMethodMock('$methodName')) {\n";
-        $mockCode .= "        return \$this->mockFactory->invokeMockedMethod('$methodName', [$argList]);\n";
-        $mockCode .= "    }\n";
 
-        if ($callParent) {
-            $mockCode .= "    return parent::$methodName($argList);\n";
+        if ($isVoid) {
+            $mockCode .= "        \$this->mockFactory->invokeMockedMethod('$methodName', [$argList]);\n";
+            $mockCode .= "        return;\n";
         } else {
-            $mockCode .= "    throw new \BadMethodCallException('Method $methodName is not mocked.');\n";
+            $mockCode .= "        return \$this->mockFactory->invokeMockedMethod('$methodName', [$argList]);\n";
+        }
+
+        $mockCode .= "    }\n";
+        if ($callParent) {
+            if ($isVoid) {
+                $mockCode .= "    parent::$methodName($argList);\n";
+            } else {
+                $mockCode .= "    return parent::$methodName($argList);\n";
+            }
+        } else {
+            $mockCode .= "    throw new MockMethodNotFoundException('Method $methodName is not mocked.');\n";
         }
 
         $mockCode .= "}\n";
         return $mockCode;
     }
+
+    private function generateCallMethod(): string
+    {
+        return 'public function __call($methodName,array $arguments):mixed {
+        if ($this->mockFactory->hasMethodMock($methodName)) {
+            return $this->mockFactory->invokeMockedMethod($methodName, $arguments);
+        }
+        throw new Zeus\Mock\MockMethodNotFoundException("Method $methodName not found or mocked.");
+    }';
+    }
+
 }
