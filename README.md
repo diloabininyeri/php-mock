@@ -135,9 +135,7 @@ Here is a basic example class that demonstrates how to use the `MockFactory` in 
 
 ```php
 <?php
-
-namespace App;
-
+use Zeus\Mock\MockFactory;
 interface Logger {
     public function log(string $message): void;
 }
@@ -161,7 +159,6 @@ class DatabaseService {
     }
 }
 
-use Zeus\Mock\MockFactory;
 
 $mockFactory = new MockFactory();
 
@@ -170,15 +167,13 @@ $mockLogger = $mockFactory->createMock(Logger::class);
 $mockFactory->mockMethod('log', fn($message) => 'mocked log: ' . $message);
 
 // Create a mock DatabaseService with the mocked Logger
-$mockDatabaseService = $mockFactory->createMock(DatabaseService::class);
+$mockDatabaseService = $mockFactory->createMock(DatabaseService::class,[
+    'logger'=>new LoggerService()
+]);
 
 // Use the service with mocked behavior
 $mockDatabaseService->saveData('Test Data');  // Outputs 'mocked log: Data saved: Test Data'
 
-// Type hinting in mocks
-$mockService = $mockFactory->createMock(SomeService::class);
-$mockFactory->mockMethod('processData', fn($data) => 42);
-echo $mockService->processData([1, 2, 3]);  // Outputs '42'
 
 ```
 This example class shows how to create mocks for both interfaces and concrete classes, including the use of mocked methods, 
