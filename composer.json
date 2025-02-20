@@ -24,7 +24,16 @@
       "Zeus\\Mock\\": "src/"
     }
   },
+
+  "autoload-dev": {
+    "psr-4": {
+      "Zeus\\Mock\\Tests\\": "tests/"
+    }
+  },
   "require": {
     "ext-pdo": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^12.0"
   }
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="tests/bootstrap.php"
+         colors="true"
+         verbose="true">
+
+    <testsuites>
+        <testsuite name="unit test">
+            <directory>./tests/unit</directory>
+        </testsuite>
+        <testsuite name="feature test">
+            <directory>./tests/feature</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./src</directory>
+            <directory suffix=".php">./tests/stubs</directory>
+        </include>
+    </coverage>
+
+</phpunit>
