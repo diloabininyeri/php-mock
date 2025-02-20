@@ -76,7 +76,9 @@ $mockLogger = $mockFactory->createMock(Logger::class);
 $mockFactory->mockMethod('log', fn($message) =>print 'mocked log: ' . $message);
 
 // Create the mock DatabaseService with the mocked Logger
-$mockDatabaseService = $mockFactory->createMock(DatabaseService::class);
+$mockDatabaseService = $mockFactory->createMock(DatabaseService::class,[
+   'logger' => $mockLogger
+]);
 
 // Use the service with mocked behavior
 $mockDatabaseService->saveData('Test Data');  // Will output 'mocked log: Data saved: Test Data'
