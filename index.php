@@ -3,32 +3,37 @@
 use Zeus\Mock\MockFactory;
 
 require_once 'vendor/autoload.php';
-$dsn = 'mysql:host=127.0.0.1;dbname=test;port=3306';
-$username = 'root';
-$password = 'my-secret-pw';
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-];
 
 
+interface Logger {
+    public function log(string $message): void;
+}
+
+class DatabaseService {
+    private Logger $logger;
+
+    public function __construct(Logger $logger) {
+        $this->logger = $logger;
+    }
+
+    public function saveData(string $data): void {
+        // Simulate saving data and logging the action
+        $this->logger->log('Data saved: ' . $data);
+    }
+}
 
 $mockFactory = new MockFactory();
 
+// Mock the Logger interface
+$mockLogger = $mockFactory->createMock(Logger::class);
 
-$mockStatement = $mockFactory->createMock(PDOStatement::class);
-$mockFactory->mockMethod('execute', fn($params) => true);
-$mockFactory->mockMethod('fetch', fn($fetchMode) => ['id' => 1, 'name' => 'Dilo Surucu']);
+// Mock the saveData method
+$mockFactory->mockMethod('log', fn($message) =>print 'mocked log: ' . $message);
 
-// Mock PDO for the "prepare" method
-$mockPdo = $mockFactory->createMock(PDO::class,[
-    'dsn' => $dsn,
-    'username' => $username,
-    'password' => $password,
-    'options' => $options
+// Create the mock DatabaseService with the mocked Logger
+$mockDatabaseService = $mockFactory->createMock(DatabaseService::class,[
+    'logger' => $mockLogger,  // The Logger instance is passed to the DatabaseService constructor as a dependency injection.
 ]);
-$mockFactory->mockMethod('prepare', fn($query) => $mockStatement);
 
-
-$a= $mockPdo->prepare('g');
-var_dump($a->execute());
-var_dump($a->fetch());
+// Use the service with mocked behavior
+$mockDatabaseService->saveData('Test Data');  // Will output 'mocked log: Data saved: Test Data'
