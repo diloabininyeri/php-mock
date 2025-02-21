@@ -30,19 +30,19 @@ class MockFactory
     public function createMock(string $originalClass, array $constructParameters = []): object
     {
         $mockClassName = $this->generateUniqueName($originalClass);
-        eval($this->generateCode($originalClass));
+        eval($this->generateCode($originalClass,$mockClassName));
         return new $mockClassName($this->mockMethod, $constructParameters);
     }
 
 
-    /**
+    /***
      * @param string $originalClass
+     * @param string $mockClassName
      * @return string
      * @throws ReflectionException
      */
-    public function generateCode(string $originalClass): string
+    public function generateCode(string $originalClass,string $mockClassName): string
     {
-        $mockClassName = $this->generateUniqueName($originalClass);
         if (interface_exists($originalClass)) {
             return new MockInterfaceGenerator()->generate($mockClassName, $originalClass);
         }

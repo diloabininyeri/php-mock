@@ -247,10 +247,10 @@ interface MYInterface
 }
 $mockFactory = new MockFactory();
 
-echo $mockFactory->generateCode(MYInterface::class);
+echo $mockFactory->generateCode(MYInterface::class,'CustomClassName');
 
 /**
-class Mock_MYInterface_174011995367b81f91c3bb9328707394 implements MYInterface {
+class CustomClassName implements MYInterface {
     private object $mockFactory;
     public function __construct($mockFactory) { $this->mockFactory = $mockFactory; }
     public function foo():void {
