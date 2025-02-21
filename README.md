@@ -238,3 +238,27 @@ function get_person(PersonInterface $person): string
 
 echo get_person($personService); // dilo surucu
 ```
+### Debug The code
+There is a usage to see what kind of code the MockFactory class produces, this also allows you to debug it
+```php
+interface MYInterface
+{
+    public function foo():void;
+}
+$mockFactory = new MockFactory();
+
+echo $mockFactory->generateCode(MYInterface::class);
+
+/**
+class Mock_MYInterface_174011995367b81f91c3bb9328707394 implements MYInterface {
+    private object $mockFactory;
+    public function __construct($mockFactory) { $this->mockFactory = $mockFactory; }
+    public function foo():void {
+        if ($this->mockFactory->hasMethodMock('foo')) {
+            $this->mockFactory->invokeMockedMethod('foo', []);
+            return;
+        }
+        throw new \Zeus\Mock\MockMethodNotFoundException('Method foo is not mocked.');
+    }
+}*/
+```
