@@ -24,9 +24,9 @@ class MockFactory
 
     /**
      * @template T
-     * @param string $originalClass
+     * @param string<T> $originalClass
      * @param array $constructParameters
-     * @return object<T>
+     * @return T of object
      * @throws ReflectionException
      */
     public function createMock(string $originalClass, array $constructParameters = []): object

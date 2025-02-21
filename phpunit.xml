@@ -4,10 +4,10 @@
          verbose="true">
 
     <testsuites>
-        <testsuite name="unit test">
+        <testsuite name="unit_test">
             <directory>./tests/unit</directory>
         </testsuite>
-        <testsuite name="feature test">
+        <testsuite name="feature_test">
             <directory>./tests/feature</directory>
         </testsuite>
     </testsuites>
