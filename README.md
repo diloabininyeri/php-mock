@@ -262,3 +262,34 @@ class CustomClassName implements MYInterface {
     }
 }*/
 ```
+
+### Mock functions
+Yes, this section allows you to mock php in-built functions that will allow you to do amazing things,
+for example, let's mock the sleep function in the example.
+
+```php
+
+namespace Foo;
+
+use Zeus\Mock\MockFunction;
+
+$mockFunction=new MockFunction();
+
+$mockFunction->add('sleep',function (int $seconds){
+    return "seconds: $seconds";
+});
+
+$mockFunction->add('time',function(){
+    return 100;
+});
+
+$mockFunction->scope(__NAMESPACE__);
+
+echo sleep(10);//it'll return 'seconds: 10',it won't wait
+echo time();//100
+
+$mockFunction->endScope();
+
+sleep(1);//it'll do wait for 1 second because out of the scope
+echo time();//it'll return the real time because it's out of the scope
+```
