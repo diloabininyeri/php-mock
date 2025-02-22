@@ -70,7 +70,7 @@ class MockFunction
             $code .= "    if (\Zeus\Mock\MockFunction::runningScope()) {\n";
             $code .= "        return \Zeus\Mock\MockFunction::callFunction('$name',func_get_args());\n";
             $code .= "    }\n";
-            $code .= "    return \\$name();\n";
+            $code .= "    return \\$name(...func_get_args());\n";
             $code .= "}\n";
         }
 
