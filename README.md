@@ -354,3 +354,74 @@ echo $mockFunction->runWithmock(new Date(), function (Date $date) {
     return $date->now();
 }); //100
 ```
+### Test with PDO object
+
+without database connection, Yes, you are a little surprised.
+PDO object will work without database connection, do not worry.
+
+```php
+
+use Zeus\Mock\MockFactory;
+
+
+$mockFactory = new MockFactory();
+
+$mockStatement = $mockFactory->createMock(PDOStatement::class);
+$mockFactory->mockMethod('execute', fn($params) => true);
+$mockFactory->mockMethod('fetch', fn($fetchMode) => ['id' => 1, 'name' => 'Dilo Surucu']);
+
+$mockPdo = $mockFactory->createMock(PDO::class, [], true);//avoid connecting to the database,it won't throw errors
+$mockFactory->mockMethod('prepare', fn($query) => $mockStatement);
+
+function fetch_data(PDO $PDO): array
+{
+    $query = $PDO->prepare('select * from users where id=1');
+    $query->execute([]);
+    return $query->fetch(PDO::FETCH_ASSOC);
+}
+
+$data = fetch_data($mockPdo);
+
+print_r($data);//['id' => 1, 'name' => 'Dilo Surucu']
+
+```
+
+With the database connection, This part actually requires a database connection.
+```php
+use Zeus\Mock\MockFactory;
+
+
+$dsn = 'mysql:host=127.0.0.1;dbname=test;port=3306';
+$username = 'root';
+$password = 'my-secret-pw';
+$options = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
+
+
+$mockFactory = new MockFactory();
+$mockStatement = $mockFactory->createMock(PDOStatement::class);
+$mockFactory->mockMethod('execute', fn($params) => true);
+$mockFactory->mockMethod('fetch', fn($fetchMode) => ['id' => 1, 'name' => 'Dilo Surucu']);
+
+$mockPdo = $mockFactory->createMock(PDO::class,[
+    'dsn' => $dsn,
+    'username' => $username,
+    'password' => $password,
+    'options' => $options
+]);
+
+$mockFactory->mockMethod('prepare', fn($query) => $mockStatement);
+
+$statement=$mockPdo->prepare('select * from users where id=1');
+
+
+function fetch_data(PDO $PDO):array
+{
+    $query=$PDO->prepare('select * from users where id=1');
+    $query->execute([]);
+    return $query->fetch(PDO::FETCH_ASSOC);
+
+}
+
+$data=fetch_data($mockPdo);
+print_r($data);////['id' => 1, 'name' => 'Dilo Surucu']
+```
