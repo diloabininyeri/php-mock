@@ -27,6 +27,8 @@ class MockFunction
      */
     private static self $instances;
 
+    private static array $createdFunctions = [];
+
     /**
      *
      */
@@ -51,7 +53,7 @@ class MockFunction
      * @param array $args
      * @return mixed
      */
-    public function call(string $name,array $args): mixed
+    public function call(string $name, array $args): mixed
     {
         $func = $this->functions[$name];
         return $func(...$args);
@@ -66,6 +68,10 @@ class MockFunction
         $code = "namespace $namespace;\n\n";
 
         foreach ($this->functions as $name => $_) {
+            if (in_array($name, static::$createdFunctions, true)) {
+                continue;
+            }
+            static::$createdFunctions[] = $name;
             $code .= "function $name() {\n";
             $code .= "    if (\Zeus\Mock\MockFunction::runningScope()) {\n";
             $code .= "        return \Zeus\Mock\MockFunction::callFunction('$name',func_get_args());\n";
@@ -77,20 +83,35 @@ class MockFunction
         return $code;
     }
 
-    public function scope(string $namespace): void
+    public function scope(?string $namespace = null): void
     {
         $this->isScoped = true;
         if (!$this->isBuilt) {
+            $namespace = $namespace ?: $this->getNamespaceFromTrace(debug_backtrace());
             eval($this->generate($namespace));
             $this->isBuilt = true;
         }
     }
 
+    private function getNamespaceFromTrace(array $trace): string
+    {
+        $file = $trace[0]['file'];
+        print_r($file);
+        $content = file_get_contents($file);
 
-    public function endScope():void
+        if (preg_match('/\bnamespace\s+([^;]+);/', $content, $matches)) {
+            return trim($matches[1]);
+        }
+
+        throw new NamespaceNotFound('the namespace keyword could not find');
+    }
+
+
+    public function endScope(): void
     {
         $this->isScoped = false;
     }
+
     /**
      * @param string $method
      * @param array $arguments
