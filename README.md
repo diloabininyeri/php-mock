@@ -326,3 +326,31 @@ $mock->endScope();
 
 echo new Date()->now(); //not 100,its return now
 ```
+### the runWithMock method in the MockFunction object
+This method defines functions in your mock object and overrides them with functions, like pulling a rabbit out of a hat.
+```php
+namespace Foo\Bar;
+
+class Date
+{
+    public function now(): int
+    {
+        return time();
+    }
+}
+
+
+//using
+
+namespace App;
+
+use Foo\Bar\Date;
+use Zeus\Mock\MockFunction;
+
+$mock=new MockFunction()
+$mock->add('time',fn()=>100);
+
+echo $mockFunction->runWithmock(new Date(), function (Date $date) {
+    return $date->now();
+}); //100
+```
