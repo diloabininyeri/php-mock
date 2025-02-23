@@ -18,7 +18,7 @@ class MockFunctionTest extends TestCase
         $m->add('time', function () {
             return 100;
         });
-        $m->scope(__NAMESPACE__);
+        $m->scope();
         $this->assertEquals(100, time());
 
         $m->endScope();
@@ -35,7 +35,7 @@ class MockFunctionTest extends TestCase
         $m->add('sleep', function (int $m) {
             return $m;
         });
-        $m->scope(__NAMESPACE__);
+        $m->scope();
         $this->assertEquals(10, sleep(10));
         $m->endScope();
     }
