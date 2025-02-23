@@ -3,6 +3,7 @@
 namespace Zeus\Mock;
 
 use Closure;
+use ReflectionObject;
 
 /**
  * @method static callFunction(string $name, array $args)
@@ -87,7 +88,7 @@ class MockFunction
     {
         $this->isScoped = true;
         if (!$this->isBuilt) {
-            $namespace ??=$this->getNamespaceFromTrace(debug_backtrace());
+            $namespace ??= $this->getNamespaceFromTrace(debug_backtrace());
             eval($this->generate($namespace));
             $this->isBuilt = true;
         }
@@ -122,5 +123,14 @@ class MockFunction
             'runningScope' => static::$instances->isScoped,
             default => null,
         };
+    }
+
+    public function runWithMock(object $object, Closure $closure): mixed
+    {
+        $reflectionObject = new ReflectionObject($object);
+        $this->scope($reflectionObject->getNamespaceName());
+        $result = $closure($object);
+        $this->endScope();
+        return $result;
     }
 }
