@@ -19,7 +19,7 @@ class MockWithPdoTest extends TestCase
     public function fetch():void
     {
         $dsn = 'mysql:host=127.0.0.1;dbname=test;port=3306';
-        $username = 'root';
+        $username = 'root1';
         $password = 'my-secret-pw';
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
