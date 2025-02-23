@@ -96,9 +96,7 @@ class MockFunction
     private function getNamespaceFromTrace(array $trace): string
     {
         $file = $trace[0]['file'];
-        print_r($file);
         $content = file_get_contents($file);
-
         if (preg_match('/\bnamespace\s+([^;]+);/', $content, $matches)) {
             return trim($matches[1]);
         }
