@@ -28,6 +28,9 @@ class MockFunction
      */
     private static self $instances;
 
+    /**
+     * @var array
+     */
     private static array $createdFunctions = [];
 
     /**
@@ -84,6 +87,10 @@ class MockFunction
         return $code;
     }
 
+    /**
+     * @param string|null $namespace
+     * @return void
+     */
     public function scope(?string $namespace = null): void
     {
         $this->isScoped = true;
@@ -94,11 +101,14 @@ class MockFunction
         }
     }
 
+    /**
+     * @param array $trace
+     * @return string
+     */
     private function getNamespaceFromTrace(array $trace): string
     {
         $file = $trace[0]['file'];
-        $content = file_get_contents($file);
-        if (preg_match('/\bnamespace\s+([^;]+);/', $content, $matches)) {
+        if (preg_match('/\bnamespace\s+([^;]+);/', file_get_contents($file), $matches)) {
             return trim($matches[1]);
         }
 
@@ -106,6 +116,9 @@ class MockFunction
     }
 
 
+    /**
+     * @return void
+     */
     public function endScope(): void
     {
         $this->isScoped = false;
@@ -125,10 +138,14 @@ class MockFunction
         };
     }
 
+    /**
+     * @param object $object
+     * @param Closure $closure
+     * @return mixed
+     */
     public function runWithMock(object $object, Closure $closure): mixed
     {
-        $reflectionObject = new ReflectionObject($object);
-        $this->scope($reflectionObject->getNamespaceName());
+        $this->scope(new ReflectionObject($object)->getNamespaceName());
         $result = $closure($object);
         $this->endScope();
         return $result;
