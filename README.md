@@ -293,3 +293,36 @@ $mockFunction->endScope();
 sleep(1);//it'll do wait for 1 second because out of the scope
 echo time();//it'll return the real time because it's out of the scope
 ```
+### Scope management
+Sometimes we may want to use mock function for objects. Here is an example; we can determine the scope area with the scope method.
+```php
+
+namespace Foo\Bar;
+
+class Date
+{
+    public function now(): int
+    {
+        return time();
+    }
+}
+
+
+//using Foo\Bar scope for mocking functions
+
+namespace App;
+
+use Foo\Bar\Date;
+use Zeus\Mock\MockFunction;
+
+$mock=new MockFunction()
+$mock->add('time',fn()=>100);
+
+$mock->scope('\\Foo\\Bar');
+
+echo new Date()->now(); //100
+
+$mock->endScope();
+
+echo new Date()->now(); //not 100,its return now
+```
