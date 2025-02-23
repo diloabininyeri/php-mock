@@ -283,7 +283,7 @@ $mockFunction->add('time',function(){
     return 100;
 });
 
-$mockFunction->scope(__NAMESPACE__);
+$mockFunction->scope();
 
 echo sleep(10);//it'll return 'seconds: 10',it won't wait
 echo time();//100
