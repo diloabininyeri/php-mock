@@ -87,7 +87,7 @@ class MockFunction
     {
         $this->isScoped = true;
         if (!$this->isBuilt) {
-            $namespace = $namespace ?: $this->getNamespaceFromTrace(debug_backtrace());
+            $namespace ??=$this->getNamespaceFromTrace(debug_backtrace());
             eval($this->generate($namespace));
             $this->isBuilt = true;
         }
