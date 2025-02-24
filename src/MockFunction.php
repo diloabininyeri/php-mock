@@ -146,8 +146,13 @@ class MockFunction
     public function runWithMock(object $object, Closure $closure): mixed
     {
         $reflectionObject = new ReflectionObject($object);
+
         if ($reflectionObject->isInternal()) {
             throw new InternalObjectException("Can't mock internal classes: " . $object::class);
+        }
+
+        if (empty($reflectionObject->getNamespaceName())) {
+            throw new NamespaceNotFound('The namespace keyword could not find in object: ');
         }
         $this->scope($reflectionObject->getNamespaceName());
         $result = $closure($object);
