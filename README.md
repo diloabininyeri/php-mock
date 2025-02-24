@@ -350,7 +350,7 @@ use Zeus\Mock\MockFunction;
 $mock=new MockFunction()
 $mock->add('time',fn()=>100);
 
-echo $mockFunction->runWithmock(new Date(), function (Date $date) {
+echo $mock->runWithmock(new Date(), function (Date $date) {
     return $date->now();
 }); //100
 ```
