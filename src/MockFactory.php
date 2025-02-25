@@ -18,7 +18,7 @@ class MockFactory
      */
     public function __construct(private MockMethodInterface $mockMethod = new MockMethod())
     {
-        $this->mockMethod->mockMethod('object.on.created', fn() => null);
+        $this->mockMethod->mockMethod('object.on.created', fn(...$args) => null);
     }
 
     public static function from(MockMethod $mockMethod):self

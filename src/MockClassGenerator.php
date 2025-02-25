@@ -29,15 +29,18 @@ class MockClassGenerator extends MockMethodOverrideGenerator
         if ($overrideConstruct) {
             $mockCode .= "    public function __construct({$this->mockMethodInterface} \$mockFactory, array \$params = []) {\n";
             $mockCode .= $defineMockFactory;
+            $mockCode.="     \$mockFactory->getMockMethod('object.on.created')(\$this,...\$params);\n";
         } elseif ($reflection->hasMethod('__construct')) {
             $mockCode .= "    public function __construct(\$mockFactory, array \$params = []) {\n";
             $mockCode .= $defineMockFactory;
             $mockCode .= "        parent::__construct(...\$params);\n";
+            $mockCode.="         \$mockFactory->getMockMethod('object.on.created')(\$this,...\$params);\n";
         } else {
             $mockCode .= "    public function __construct(\$mockFactory) {\n";
             $mockCode .= $defineMockFactory;
+            $mockCode.="\$mockFactory->getMockMethod('object.on.created')(\$this,\$params=[]);\n";
         }
-        $mockCode.="\$mockFactory->getMockMethod('object.on.created')(\$this,\$params=[]);\n";
+
         $mockCode .= "    }\n";
 
 

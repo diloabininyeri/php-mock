@@ -450,3 +450,17 @@ $mockFactory
     ->createMock(Date::class, ['a' => 1]);
 
 ```
+You can get the parameters sent to the constructor as soon as it is instanced.
+```php
+
+$mockMethod = new MockMethod();
+
+
+$mockFactory = new MockFactory($mockMethod);
+$mockFactory->onInstanceCreated(function (Date $dateInstance, string $date) {
+    //$dateInstance
+    //$date 2022-12-12
+
+});
+$dateInstance = $mockFactory->createMock(Date::class, ['date' => '2022-12-12'], true);
+```
