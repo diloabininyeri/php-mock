@@ -4,6 +4,7 @@
 namespace Zeus\Mock;
 
 use ReflectionException;
+use Closure;
 
 /**
  * @mixin MockMethodInterface
@@ -11,11 +12,19 @@ use ReflectionException;
 class MockFactory
 {
 
+
     /**
      * @param MockMethodInterface $mockMethod
      */
     public function __construct(private MockMethodInterface $mockMethod = new MockMethod())
-    {}
+    {
+        $this->mockMethod->mockMethod('object.on.created', fn() => null);
+    }
+
+    public static function from(MockMethod $mockMethod):self
+    {
+        return new self($mockMethod);
+    }
 
     /**
      * @template T
@@ -56,6 +65,12 @@ class MockFactory
         return 'Mock_' .
             str_replace('\\', '_', $originalClass) . '_' .
             str_replace('.', '', uniqid(time(), true));
+    }
+
+    public function onInstanceCreated(Closure $closure):self
+    {
+        $this->mockMethod->mockMethod('object.on.created', $closure);
+        return $this;
     }
 
     /**

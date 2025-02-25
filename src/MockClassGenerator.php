@@ -37,6 +37,7 @@ class MockClassGenerator extends MockMethodOverrideGenerator
             $mockCode .= "    public function __construct(\$mockFactory) {\n";
             $mockCode .= $defineMockFactory;
         }
+        $mockCode.="\$mockFactory->invokeMockedMethod('object.on.created',[\$this]);\n";
         $mockCode .= "    }\n";
 
 
