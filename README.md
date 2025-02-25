@@ -425,3 +425,28 @@ function fetch_data(PDO $PDO):array
 $data=fetch_data($mockPdo);
 print_r($data);////['id' => 1, 'name' => 'Dilo Surucu']
 ```
+**onInstanceCreated**
+
+This method is triggered when the object is instantiated.
+```php
+
+$mockMethod = new MockMethod();
+
+$mockMethod->mockMethod('test', function () {
+    return 'test foo';
+});
+$mockMethod->mockMethod('now', function (int $a) {
+    return $a;
+});
+
+
+$mockFactory = new MockFactory($mockMethod);
+$mockFactory
+    ->onInstanceCreated(function (Date $date) {
+        echo $date->test(); //test foo
+        
+        //$date->__construct(); for custom constructor
+    })
+    ->createMock(Date::class, ['a' => 1]);
+
+```
