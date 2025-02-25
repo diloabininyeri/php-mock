@@ -49,4 +49,13 @@ class MockMethod implements MockMethodInterface
         $this->methods[$methodName] = $closure;
         return $this;
     }
+
+    /**
+     * @param string $methodName
+     * @return Closure
+     */
+    public function getMockMethod(string $methodName): Closure
+    {
+       return $this->methods[$methodName];
+    }
 }

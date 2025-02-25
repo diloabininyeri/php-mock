@@ -31,4 +31,10 @@ interface MockMethodInterface
      * @return $this
      */
     public function mockMethod(string $methodName, Closure $closure): MockMethod;
+
+    /**
+     * @param string $methodName
+     * @return Closure
+     */
+    public function getMockMethod(string $methodName): Closure;
 }

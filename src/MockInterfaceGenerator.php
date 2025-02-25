@@ -24,7 +24,7 @@ class MockInterfaceGenerator extends MockMethodOverrideGenerator
         $mockCode .= "    public function __construct({$this->mockMethodInterface} \$mockFactory)
          {
           \$this->mockFactory = \$mockFactory;
-          \$mockFactory->invokeMockedMethod('object.on.created',[\$this]);
+          \$mockFactory->getMockMethod('object.on.created')(\$this);
         }\n";
 
         foreach ($reflection->getMethods() as $method) {
