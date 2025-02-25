@@ -425,7 +425,7 @@ function fetch_data(PDO $PDO):array
 $data=fetch_data($mockPdo);
 print_r($data);////['id' => 1, 'name' => 'Dilo Surucu']
 ```
-**onInstanceCreated**
+**onMockInstanceCreated**
 
 This method is triggered when the object is instantiated.
 ```php
@@ -442,7 +442,7 @@ $mockMethod->mockMethod('now', function (int $a) {
 
 $mockFactory = new MockFactory($mockMethod);
 $mockFactory
-    ->onInstanceCreated(function (Date $date) {
+    ->onMockInstanceCreated(function (Date $date) {
         echo $date->test(); //test foo
         
         //$date->__construct(); for custom constructor
@@ -457,7 +457,7 @@ $mockMethod = new MockMethod();
 
 
 $mockFactory = new MockFactory($mockMethod);
-$mockFactory->onInstanceCreated(function (Date $dateInstance, string $date) {
+$mockFactory->onMockInstanceCreated(function (Date $dateInstance, string $date) {
     //$dateInstance
     //$date 2022-12-12
 

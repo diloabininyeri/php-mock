@@ -67,7 +67,7 @@ class MockFactory
             str_replace('.', '', uniqid(time(), true));
     }
 
-    public function onInstanceCreated(Closure $closure):self
+    public function onMockInstanceCreated(Closure $closure):self
     {
         $this->mockMethod->mockMethod('object.on.created', $closure);
         return $this;
