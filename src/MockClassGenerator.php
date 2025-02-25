@@ -20,15 +20,14 @@ class MockClassGenerator extends MockMethodOverrideGenerator
      */
     public function generate(string $mockClassName, string $class, bool $overrideConstruct = false): string
     {
-        $mockMethodInterface = MockMethodInterface::class;
         $reflection = new ReflectionClass($class);
         $mockCode = "class $mockClassName extends $class {\n";
-        $mockCode .= "    private $mockMethodInterface \$mockFactory;\n";
+        $mockCode .= "    private {$this->mockMethodInterface} \$mockFactory;\n";
 
         $defineMockFactory = "        \$this->mockFactory = \$mockFactory;\n";
 
         if ($overrideConstruct) {
-            $mockCode .= "    public function __construct({$mockMethodInterface} \$mockFactory, array \$params = []) {\n";
+            $mockCode .= "    public function __construct({$this->mockMethodInterface} \$mockFactory, array \$params = []) {\n";
             $mockCode .= $defineMockFactory;
         } elseif ($reflection->hasMethod('__construct')) {
             $mockCode .= "    public function __construct(\$mockFactory, array \$params = []) {\n";

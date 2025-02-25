@@ -10,18 +10,13 @@ use ReflectionException;
  */
 class MockFactory
 {
-    /**
-     * @var MockMethodInterface
-     */
-    private MockMethodInterface $mockMethod;
 
     /**
-     *
+     * @param MockMethodInterface $mockMethod
      */
-    public function __construct()
-    {
-        $this->mockMethod = new MockMethod();
-    }
+    public function __construct(private MockMethodInterface $mockMethod = new MockMethod())
+    {}
+
     /**
      * @template T
      * @param string<T> $originalClass

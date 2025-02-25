@@ -9,8 +9,22 @@ use ReflectionParameter;
 use ReflectionType;
 use ReflectionUnionType;
 
+/**
+ *
+ */
 abstract class MockMethodOverrideGenerator
 {
+
+    /**
+     * @var string
+     */
+    protected string $mockMethodInterface = MockMethodInterface::class;
+
+    /**
+     * @param ReflectionMethod $method
+     * @param bool $callParent
+     * @return string
+     */
     protected function generateMethodOverride(ReflectionMethod $method, bool $callParent = true): string
     {
         $methodName = $method->getName();
