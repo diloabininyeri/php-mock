@@ -18,10 +18,11 @@ class MockInterfaceGenerator extends MockMethodOverrideGenerator
      */
     public function generate(string $mockClassName, string $interface): string
     {
+        $mockMethodInterface = MockMethodInterface::class;
         $reflection = new ReflectionClass($interface);
         $mockCode = "class $mockClassName implements $interface {\n";
-        $mockCode .= "    private object \$mockFactory;\n";
-        $mockCode .= "    public function __construct(\$mockFactory) { \$this->mockFactory = \$mockFactory; }\n";
+        $mockCode .= "    private $mockMethodInterface \$mockFactory;\n";
+        $mockCode .= "    public function __construct({$mockMethodInterface} \$mockFactory) { \$this->mockFactory = \$mockFactory; }\n";
 
         foreach ($reflection->getMethods() as $method) {
             $mockCode .= $this->generateMethodOverride($method, false);

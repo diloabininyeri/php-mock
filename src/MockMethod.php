@@ -7,7 +7,7 @@ use Closure;
 /**
  *
  */
-class MockMethod
+class MockMethod implements MockMethodInterface
 {
     /**
      * @var array

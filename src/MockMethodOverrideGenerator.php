@@ -35,7 +35,7 @@ abstract class MockMethodOverrideGenerator
         $mockCode .= "        }\n";
         if ($callParent) {
             if ($isStatic) {
-                $mockCode .= "        parent::$methodName($argList);\n"; // For static methods, use ::
+                $mockCode .= "        parent::$methodName($argList);\n"; // For static methods, use :
             } elseif ($isVoid) {
                 $mockCode .= "        parent::$methodName($argList);\n";
             } else {

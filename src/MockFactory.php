@@ -6,14 +6,14 @@ namespace Zeus\Mock;
 use ReflectionException;
 
 /**
- * @mixin MockMethod
+ * @mixin MockMethodInterface
  */
 class MockFactory
 {
     /**
-     * @var MockMethod
+     * @var MockMethodInterface
      */
-    private MockMethod $mockMethod;
+    private MockMethodInterface $mockMethod;
 
     /**
      *
@@ -30,12 +30,13 @@ class MockFactory
      * @return T of object
      * @throws ReflectionException
      */
-    public function createMock(string $originalClass, array $constructParameters = [],bool $overrideConstruct=false): object
+    public function createMock(string $originalClass, array $constructParameters = [], bool $overrideConstruct = false): object
     {
         $mockClassName = $this->generateUniqueName($originalClass);
-        eval($this->generateCode($originalClass,$mockClassName,$overrideConstruct));
+        eval($this->generateCode($originalClass, $mockClassName, $overrideConstruct));
         return new $mockClassName($this->mockMethod, $constructParameters);
     }
+
     /***
      * @param string $originalClass
      * @param string $mockClassName
@@ -43,13 +44,14 @@ class MockFactory
      * @return string
      * @throws ReflectionException
      */
-    public function generateCode(string $originalClass,string $mockClassName,bool $overrideConstruct=false): string
+    public function generateCode(string $originalClass, string $mockClassName, bool $overrideConstruct = false): string
     {
         if (interface_exists($originalClass)) {
             return new MockInterfaceGenerator()->generate($mockClassName, $originalClass);
         }
-        return new MockClassGenerator()->generate($mockClassName, $originalClass,$overrideConstruct);
+        return new MockClassGenerator()->generate($mockClassName, $originalClass, $overrideConstruct);
     }
+
     /**
      * @param string $originalClass
      * @return string
@@ -60,6 +62,7 @@ class MockFactory
             str_replace('\\', '_', $originalClass) . '_' .
             str_replace('.', '', uniqid(time(), true));
     }
+
     /**
      * @param string $method
      * @param array $arguments

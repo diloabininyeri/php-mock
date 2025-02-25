@@ -51,7 +51,6 @@ class MockFunction
         $this->functions[$name] = $function;
     }
 
-
     /**
      * @param string $name
      * @param array $args
@@ -111,7 +110,6 @@ class MockFunction
         if (preg_match('/\bnamespace\s+([^;]+);/', file_get_contents($file), $matches)) {
             return trim($matches[1]);
         }
-
         throw new NamespaceNotFound('the namespace keyword could not find');
     }
 
