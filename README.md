@@ -478,3 +478,29 @@ $dateInstance->getDate(12, 2015);
 echo $mockMethod->getCallCount('getDate');//2
 
 ```
+### number of mocked function calls
+We can get how many times the mocked function was called, inside the scope, outside the scope and in total.
+```php
+$mockFunction = new MockFunction();
+
+ $mockFunction->add('time', function () {
+     return 100;
+ });
+
+ $mockFunction->scope();
+ time(); //100
+ time();  //100
+ $mockFunction->getCalledCountInScope('time'); //2
+ $mockFunction->getCalledCountOutScope('time');//0
+ 
+ $mockFunction->endScope();
+
+ time(); //it returns real time not the 100
+ time(); //it returns real time not the 100
+ time(); //it returns real time not the 100
+
+ 
+ $mockFunction->getCalledCountOutScope('time'); //3
+ 
+ $mockFunction->getTotalCount('time'); //5
+```
