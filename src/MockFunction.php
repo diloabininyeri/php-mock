@@ -8,6 +8,7 @@ use ReflectionObject;
 /**
  * @method static callFunction(string $name, array $args)
  * @method static bool runningScope()
+ * @method static mixed callOutScope(string $name, Closure $closure)
  */
 class MockFunction
 {
@@ -32,6 +33,11 @@ class MockFunction
      * @var array
      */
     private static array $createdFunctions = [];
+
+    /**
+     * @var array<string, array{in_scope: int, out_scope: int}> $calledCount
+     */
+    private array $calledCount = [];
 
     /**
      *
@@ -59,7 +65,24 @@ class MockFunction
     public function call(string $name, array $args): mixed
     {
         $func = $this->functions[$name];
-        return $func(...$args);
+        $returnValue = $func(...$args);
+        $this->incrementCount($name);
+        return $returnValue;
+    }
+
+    /**
+     * @param string $name
+     * @return void
+     */
+    private function incrementCount(string $name): void
+    {
+        $this->calledCount[$name]['in_scope'] ??= 0;
+        $this->calledCount[$name]['out_scope'] ??= 0;
+        if ($this->isScoped === true) {
+            ++$this->calledCount[$name]['in_scope'];
+            return;
+        }
+        ++$this->calledCount[$name]['out_scope'];
     }
 
     /**
@@ -75,15 +98,25 @@ class MockFunction
                 continue;
             }
             static::$createdFunctions[] = $name;
+
             $code .= "function $name() {\n";
             $code .= "    if (\Zeus\Mock\MockFunction::runningScope()) {\n";
-            $code .= "        return \Zeus\Mock\MockFunction::callFunction('$name',func_get_args());\n";
+            $code .= "        return \Zeus\Mock\MockFunction::callFunction('$name', func_get_args());\n";
             $code .= "    }\n";
-            $code .= "    return \\$name(...func_get_args());\n";
+            $code .= "    \$args = func_get_args();\n";
+            $code .= "    return \Zeus\Mock\MockFunction::callOutScope('$name', function() use (\$args) { return \\$name(...\$args); });\n";
+
             $code .= "}\n";
         }
 
         return $code;
+    }
+
+    public function callOutScopeFunction(string $name, Closure $closure): mixed
+    {
+        $returnValue = $closure();
+        $this->incrementCountOutOfScope($name);
+        return $returnValue;
     }
 
     /**
@@ -132,8 +165,52 @@ class MockFunction
         return match ($method) {
             'callFunction' => static::$instances->call(...$arguments),
             'runningScope' => static::$instances->isScoped,
+            'callOutScope' => static::$instances->callOutScopeFunction(...$arguments),
             default => null,
         };
+    }
+
+    /**
+     * @param string $functionName
+     * @return array{in_scope:int,out_scope:int}
+     */
+
+    public function getCalledCount(string $functionName): array
+    {
+        return $this->calledCount[$functionName] ?? ['in_scope' => 0, 'out_scope' => 0];
+    }
+
+    /**
+     * @noinspection PhpUnused
+     * @return void
+     */
+    public function resetCounts(): void
+    {
+        $this->calledCount = [];
+    }
+
+    /**
+     * @param string $functionName
+     * @return int
+     */
+    public function getCalledCountOutScope(string $functionName): int
+    {
+        return $this->getCalledCount($functionName)['out_scope'];
+    }
+
+    public function getTotalCount(string $functionName): int
+    {
+        $calledCount = $this->getCalledCount($functionName);
+        return $calledCount['in_scope'] + $calledCount['out_scope'];
+    }
+
+    /**
+     * @param string $name
+     * @return int
+     */
+    public function getCalledCountInScope(string $name): int
+    {
+        return $this->getCalledCount($name)['in_scope'];
     }
 
     /**
@@ -156,5 +233,15 @@ class MockFunction
         $result = $closure($object);
         $this->endScope();
         return $result;
+    }
+
+    /**
+     * @param string $name
+     * @return void
+     */
+    private function incrementCountOutOfScope(string $name): void
+    {
+        $this->calledCount[$name][$name] ??= 0;
+        ++$this->calledCount[$name]['out_scope'];
     }
 }
