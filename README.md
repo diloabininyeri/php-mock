@@ -464,3 +464,17 @@ $mockFactory->onMockInstanceCreated(function (Date $dateInstance, string $date) 
 });
 $dateInstance = $mockFactory->createMock(Date::class, ['date' => '2022-12-12'], true);
 ```
+
+### Count called methods
+In this section, I show how to use the getCallCount method to get how many times a method has been called.
+```php
+
+$mockMethod = new MockMethod();
+$mockMethod->mockMethod('getDate', '2024');
+$dateInstance=MockFactory::from($mockMethod)->createMock(Date::class);
+$dateInstance->getDate(12, 2012);
+$dateInstance->getDate(12, 2015);
+
+echo $mockMethod->getCallCount('getDate');//2
+
+```
