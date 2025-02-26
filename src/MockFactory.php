@@ -82,4 +82,14 @@ class MockFactory
     {
         return $this->mockMethod->$method(...$arguments);
     }
+
+    public function getCallCount(string $methodName):int
+    {
+        return $this->mockMethod->getCallCount($methodName);
+    }
+
+    public function getMockMethod(): MockMethodInterface
+    {
+        return $this->mockMethod;
+    }
 }

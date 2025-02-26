@@ -27,14 +27,20 @@ interface MockMethodInterface
 
     /**
      * @param string $methodName
-     * @param Closure $closure
+     * @param Closure $response
      * @return $this
      */
-    public function mockMethod(string $methodName, Closure $closure): MockMethod;
+    public function mockMethod(string $methodName, Closure $response): MockMethod;
 
     /**
      * @param string $methodName
      * @return Closure
      */
     public function getMockMethod(string $methodName): Closure;
+
+    /**
+     * @param string $methodName
+     * @return int
+     */
+    public function getCallCount(string $methodName): int;
 }
