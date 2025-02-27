@@ -11,7 +11,7 @@ use ReflectionObject;
 class MockFunction
 {
     /**
-     * @var array
+     * @var array<string,Closure>
      */
     private array $functions = [];
     /**
@@ -47,12 +47,15 @@ class MockFunction
 
     /**
      * @param string $name
-     * @param Closure $function
+     * @param Closure $returnValue
      * @return void
      */
-    public function add(string $name, Closure $function): void
+    public function add(string $name, mixed $returnValue): void
     {
-        $this->functions[$name] = $function;
+        if (!($returnValue instanceof Closure)) {
+            $returnValue=static fn() => $returnValue;
+        }
+        $this->functions[$name] = $returnValue;
     }
 
     /**
