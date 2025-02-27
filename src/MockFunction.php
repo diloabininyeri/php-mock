@@ -6,9 +6,7 @@ use Closure;
 use ReflectionObject;
 
 /**
- * @method static callFunction(string $name, array $args)
- * @method static bool runningScope()
- * @method static mixed callOutScope(string $name, Closure $closure)
+ *
  */
 class MockFunction
 {
@@ -62,7 +60,7 @@ class MockFunction
      * @param array $args
      * @return mixed
      */
-    public function call(string $name, array $args): mixed
+    private function call(string $name, array $args): mixed
     {
         $func = $this->functions[$name];
         $returnValue = $func(...$args);
@@ -101,10 +99,9 @@ class MockFunction
 
             $code .= "function $name() {\n";
             $code .= "    if (\Zeus\Mock\MockFunction::runningScope()) {\n";
-            $code .= "        return \Zeus\Mock\MockFunction::callFunction('$name', func_get_args());\n";
+            $code .= "        return \Zeus\Mock\MockFunction::callMockFunction('$name', func_get_args());\n";
             $code .= "    }\n";
-            $code .= "    \$args = func_get_args();\n";
-            $code .= "    return \Zeus\Mock\MockFunction::callOutScope('$name', function() use (\$args) { return \\$name(...\$args); });\n";
+            $code .= "    return \Zeus\Mock\MockFunction::callRealFunction('$name', ...func_get_args());\n";
 
             $code .= "}\n";
         }
@@ -112,9 +109,9 @@ class MockFunction
         return $code;
     }
 
-    public function callOutScopeFunction(string $name, Closure $closure): mixed
+    private function callGlobalFunction(string $name, mixed ...$args): mixed
     {
-        $returnValue = $closure();
+        $returnValue = $name(...$args);
         $this->incrementCountOutOfScope($name);
         return $returnValue;
     }
@@ -156,21 +153,6 @@ class MockFunction
     }
 
     /**
-     * @param string $method
-     * @param array $arguments
-     * @return mixed|void
-     */
-    public static function __callStatic(string $method, array $arguments)
-    {
-        return match ($method) {
-            'callFunction' => static::$instances->call(...$arguments),
-            'runningScope' => static::$instances->isScoped,
-            'callOutScope' => static::$instances->callOutScopeFunction(...$arguments),
-            default => null,
-        };
-    }
-
-    /**
      * @param string $functionName
      * @return array{in_scope:int,out_scope:int}
      */
@@ -205,6 +187,7 @@ class MockFunction
     }
 
     /**
+     * @noinspection PhpUnused
      * @param string $name
      * @return int
      */
@@ -214,6 +197,7 @@ class MockFunction
     }
 
     /**
+     * @noinspection PhpUnused
      * @param object $object
      * @param Closure $closure
      * @return mixed
@@ -243,5 +227,20 @@ class MockFunction
     {
         $this->calledCount[$name][$name] ??= 0;
         ++$this->calledCount[$name]['out_scope'];
+    }
+
+    /**
+     * @param string $method
+     * @param array $arguments
+     * @return mixed|void
+     */
+    public static function __callStatic(string $method, array $arguments)
+    {
+        return match ($method) {
+            'callMockFunction' => static::$instances->call(...$arguments),
+            'runningScope' => static::$instances->isScoped,
+            'callRealFunction' => static::$instances->callGlobalFunction(...$arguments),
+            default => null,
+        };
     }
 }
