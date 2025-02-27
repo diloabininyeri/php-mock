@@ -293,6 +293,18 @@ $mockFunction->endScope();
 sleep(1);//it'll do wait for 1 second because out of the scope
 echo time();//it'll return the real time because it's out of the scope
 ```
+or short syntax, Return value can be added to mock function in two ways, type 1 and type 2.
+```php
+
+$mockFunction = new MockFunction();
+//type 1
+$mockFunction->add('date','2011');
+
+//type 2
+$mockFunction->add('date',function (){
+    return '2011'
+});
+```
 ### Scope management
 Sometimes we may want to use mock function for objects. Here is an example; we can determine the scope area with the scope method.
 ```php
