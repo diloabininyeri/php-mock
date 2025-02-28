@@ -8,6 +8,6 @@ class Date
 
     public function now():string
     {
-        return date('y-m-d');
+        return date('Y-m-d');
     }
 }

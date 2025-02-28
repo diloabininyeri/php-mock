@@ -516,3 +516,59 @@ $mockFunction = new MockFunction();
  
  $mockFunction->getTotalCount('time'); //5
 ```
+### The restore mock function
+You can convert a mock function to php's original function, that is, restore it.
+```php
+$mockFunction = new MockFunction();
+
+
+$mockFunction->addIfNotDefined('date', '2010-01-01');
+
+
+$mockFunction->scope();
+
+echo $date->now(); //2010-01-01,its return the mock function value
+$mockFunction->restoreOriginalFunction('date');
+echo $date->now();  //2025-02-28, its return the real value of date function
+
+
+$mockFunction->endScope();
+```
+or
+```php
+$mockFunction = new MockFunction();
+$mockFunction->addIfNotDefined('date', '2010-01-01');
+
+$mockFunction->runWithMock(new Date(), function (Date $date) use ($mockFunction) {
+    echo $date->now(); //2010-01-01
+    $mockFunction->restoreOriginalFunction('date');
+    echo $date->now(); // it will return current date not the mock function
+});
+```
+
+### the once for the mock functions
+You may want mock functions to run only once.
+Here is the simple usage
+```php
+$mockFunction = new MockFunction();
+
+$mockFunction->once(function (MockFunction $function){
+    $function->add('date', '2022-01-01');
+    $function->add('time', 100);
+});
+
+$mockFunction->scope();
+echo date('y-m-d'); //it will work and will return the 2010-01-01
+echo date('y-m-d');//it will throw exception, because it will work just once 
+
+echo time(); //it will work and will return the 100
+echo time(); ////it will throw exception, because it will work just once 
+/// 
+$mockFunction->endScope();
+
+echo date('y-m-d'); //2025-02-28, it will work,because it's out of the scope
+echo date('y-m-d'); //2025-02-28, it will work,because it's out of the scope
+echo date('y-m-d'); //2025-02-28, it will work,because it's out of the scope
+echo time(); //it will work and will return the real time
+
+```

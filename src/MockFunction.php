@@ -15,6 +15,11 @@ class MockFunction
      * @var array<string,Closure>
      */
     private array $functions = [];
+
+    /**
+     * @var array<string, Closure> $originalFunctions
+     */
+    private array $originalFunctions = [];
     /**
      * @var bool
      */
@@ -33,6 +38,15 @@ class MockFunction
      */
     private static array $createdFunctions = [];
 
+
+    private array $onceFunctions = [];
+
+
+    /**
+     * @var bool $onceMode
+     */
+    private bool $onceMode = false;
+
     /**
      * @var array<string, array{in_scope: int, out_scope: int}> $calledCount
      */
@@ -46,6 +60,7 @@ class MockFunction
         static::$instances = $this;
     }
 
+
     /**
      * @param string $name
      * @param Closure $returnValue
@@ -53,10 +68,30 @@ class MockFunction
      */
     public function add(string $name, mixed $returnValue): void
     {
+        if ($this->onceMode && !in_array($name, $this->onceFunctions, true)) {
+             $this->onceFunctions[] = $name;
+        }
+        if (!isset($this->originalFunctions[$name]) && function_exists($name)) {
+            $this->originalFunctions[$name] = $name(...);
+        }
+
         if (!($returnValue instanceof Closure)) {
             $returnValue = static fn() => $returnValue;
         }
+
         $this->functions[$name] = $returnValue;
+    }
+
+    /***
+     * @noinspection PhpUnused
+     * @param string $name
+     * @return void
+     */
+    public function restoreOriginalFunction(string $name): void
+    {
+        if (isset($this->originalFunctions[$name])) {
+            $this->functions[$name] = $this->originalFunctions[$name];
+        }
     }
 
     /**
@@ -88,6 +123,12 @@ class MockFunction
      */
     private function call(string $name, array $args): mixed
     {
+        if (in_array($name, $this->onceFunctions, true)) {
+            $calledCount = $this->getCalledCountInScope($name);
+            if ($calledCount !== 0) {
+                throw new OnceMockFunction("$name cant be called more than once ");
+            }
+        }
         return $this->executeWithEffect(
             call_user_func($this->functions[$name], ...$args),
             fn() => $this->incrementCount($name)
@@ -265,6 +306,13 @@ class MockFunction
         return $result;
     }
 
+
+    public function once(Closure $closure):void
+    {
+        $this->onceMode = true;
+        $closure($this);
+        $this->onceMode = false;
+    }
     /**
      * @param string $method
      * @param array $arguments
