@@ -4,6 +4,7 @@ namespace Zeus\Mock;
 
 use Closure;
 use ReflectionObject;
+use function call_user_func;
 
 /**
  *
@@ -53,9 +54,31 @@ class MockFunction
     public function add(string $name, mixed $returnValue): void
     {
         if (!($returnValue instanceof Closure)) {
-            $returnValue=static fn() => $returnValue;
+            $returnValue = static fn() => $returnValue;
         }
         $this->functions[$name] = $returnValue;
+    }
+
+    /**
+     * @noinspection PhpUnused
+     * @param string $name
+     * @param mixed $returnValue
+     * @return void
+     */
+    public function addIfNotDefined(string $name, mixed $returnValue): void
+    {
+        if (!$this->has($name)) {
+            $this->add($name, $returnValue);
+        }
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function has(string $name): bool
+    {
+        return isset($this->functions[$name]);
     }
 
     /**
@@ -65,10 +88,23 @@ class MockFunction
      */
     private function call(string $name, array $args): mixed
     {
-        $func = $this->functions[$name];
-        $returnValue = $func(...$args);
-        $this->incrementCount($name);
-        return $returnValue;
+        return $this->executeWithEffect(
+            call_user_func($this->functions[$name], ...$args),
+            fn() => $this->incrementCount($name)
+        );
+    }
+
+    /**
+     * @param string $name
+     * @param mixed ...$args
+     * @return mixed
+     */
+    private function callGlobalFunction(string $name, mixed ...$args): mixed
+    {
+        return $this->executeWithEffect(
+            $name(...$args),
+            fn() => $this->incrementCount($name)
+        );
     }
 
     /**
@@ -112,10 +148,14 @@ class MockFunction
         return $code;
     }
 
-    private function callGlobalFunction(string $name, mixed ...$args): mixed
+    /**
+     * @param mixed $returnValue
+     * @param Closure $effect
+     * @return mixed
+     */
+    private function executeWithEffect(mixed $returnValue, Closure $effect): mixed
     {
-        $returnValue = $name(...$args);
-        $this->incrementCountOutOfScope($name);
+        $effect();
         return $returnValue;
     }
 
@@ -139,8 +179,7 @@ class MockFunction
      */
     private function getNamespaceFromTrace(array $trace): string
     {
-        $file = $trace[0]['file'];
-        if (preg_match('/\bnamespace\s+([^;]+);/', file_get_contents($file), $matches)) {
+        if (preg_match('/\bnamespace\s+([^;]+);/', file_get_contents($trace[0]['file']), $matches)) {
             return trim($matches[1]);
         }
         throw new NamespaceNotFound('the namespace keyword could not find');
@@ -183,6 +222,10 @@ class MockFunction
         return $this->getCalledCount($functionName)['out_scope'];
     }
 
+    /**
+     * @param string $functionName
+     * @return int
+     */
     public function getTotalCount(string $functionName): int
     {
         $calledCount = $this->getCalledCount($functionName);
@@ -220,16 +263,6 @@ class MockFunction
         $result = $closure($object);
         $this->endScope();
         return $result;
-    }
-
-    /**
-     * @param string $name
-     * @return void
-     */
-    private function incrementCountOutOfScope(string $name): void
-    {
-        $this->calledCount[$name][$name] ??= 0;
-        ++$this->calledCount[$name]['out_scope'];
     }
 
     /**
