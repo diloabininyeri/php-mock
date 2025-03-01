@@ -602,3 +602,15 @@ $mockFunction->runWithMock(new Date(), function (Date $date) {
 });
 
 ```
+**for the MockFactory**
+```php
+$mockFactory = new MockFactory();
+$mockFactory->addConsecutive('now', ['2012-10-9', '2012-10-10', '2012-10-11']);
+
+$dateInstance = $mockFactory->createMock(Date::class);
+
+echo $dateInstance->now(); //2012-10-9
+echo $dateInstance->now(); //2012-10-10
+echo $dateInstance->now(); //2012-10-11
+
+```
