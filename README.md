@@ -572,3 +572,33 @@ echo date('y-m-d'); //2025-02-28, it will work,because it's out of the scope
 echo time(); //it will work and will return the real time
 
 ```
+### side effects
+We can make mock functions return a different value each time they are called.
+It will be enough to define a simple array and send it as a parameter.
+```php
+
+namespace App;
+
+class Date
+{
+    public function now():string
+    {
+        return date('Y-m-d');
+    }
+}
+
+$mockFunction = new MockFunction();
+$mockFunction->addConsecutive('date', [
+    '2012-12-11',
+    '2012-12-10',
+    '2012-12-9',
+]);
+
+$mockFunction->runWithMock(new Date(), function (Date $date) {
+
+    echo $date->now(); //2012-12-11
+    echo $date->now(); //2012-12-10,
+    echo $date->now(); //2012-12-11,
+});
+
+```

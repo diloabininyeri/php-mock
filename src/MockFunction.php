@@ -327,4 +327,11 @@ class MockFunction
             default => null,
         };
     }
+
+    public function addConsecutive(string $name, array $array):void
+    {
+        $this->add($name,function () use (&$array):mixed{
+            return array_shift($array);
+        });
+    }
 }
