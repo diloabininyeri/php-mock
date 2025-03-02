@@ -644,3 +644,23 @@ function test(Date $date):void
 test($date);
 
 ```
+***Limiting calls***
+You can specify the maximum number of times the methods are called. For example, let's write a method that runs at most three times.
+```php
+$mockFactory = new MockFactory();
+
+// Set the method to be called at most 3 times
+$mockFactory->atMost(3, 'now', function () {
+    return '2012-2-2';
+});
+
+$dateInstance = $mockFactory->createMock(Date::class);
+
+echo $dateInstance->now(); // Outputs '2012-2-2'
+echo $dateInstance->now(); // Outputs '2012-2-2'
+echo $dateInstance->now(); // Outputs '2012-2-2'
+
+// This will throw an exception after the third call
+echo $dateInstance->now(); // AtMostMethodException: Method now can be called only 3 times.
+
+```

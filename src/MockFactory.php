@@ -139,4 +139,24 @@ class MockFactory
             $methodName, fn() => throw new NeverMethodException("Unexpected method call: $methodName. This method should never be invoked.")
         );
     }
+
+    /**
+     * @param string $methodName
+     * @return void
+     */
+    public function atMost(int $count, string $methodName, mixed $response): void
+    {
+        $this->mockMethod->add($methodName, function (...$args) use ($count, $response, $methodName) {
+            static $callCount = 0;
+            if ($callCount >= $count) {
+                throw new AtMostMethodException("Method $methodName must be called at most $count times.");
+            }
+            if ($response instanceof Closure) {
+                $callCount++;
+                return $response(...$args);
+            }
+            $callCount++;
+            return $response;
+        });
+    }
 }
