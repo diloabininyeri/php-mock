@@ -614,7 +614,7 @@ echo $dateInstance->now(); //2012-10-10
 echo $dateInstance->now(); //2012-10-11
 
 ```
-*** The once method in the MockFactory ande MockMethod
+**The once method in the MockFactory ande MockMethod**
 
 ```php
 $mockFactory = new MockFactory();
