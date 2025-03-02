@@ -6,7 +6,7 @@ class Date
 {
 
 
-    public function now():string
+    public function now(int $a):string
     {
         return date('Y-m-d');
     }
