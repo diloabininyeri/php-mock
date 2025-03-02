@@ -615,7 +615,7 @@ echo $dateInstance->now(); //2012-10-11
 
 ```
 **The once method in the MockFactory ande MockMethod**
-
+Used to guarantee that a method is executed only once, and throws an exception if multiple invocations are attempted.
 ```php
 $mockFactory = new MockFactory();
 $mockFactory->once(function (MockMethod $method) {
@@ -626,4 +626,21 @@ $dateInstance = $mockFactory->createMock(Date::class);
 
 $dateInstance->now();
 $dateInstance->now(); //it will throw an exception, because we allowed to this method to just once 
+```
+**The never method in the MockFactory ande MockMethod**
+This is a script to ensure that a method is never called during testing and throws an exception even if it is called.
+```php
+$mockFactory = new MockFactory();
+
+$mockFactory->never('now');
+
+$date=$mockFactory->createMock(Date::class);
+
+function test(Date $date):void
+{
+    $date->now(); //it'll throw an exception, because it'll we defined it as never works
+}
+
+test($date);
+
 ```

@@ -128,4 +128,15 @@ class MockFactory
     {
         $this->mockMethod->once($mockMethodClosure);
     }
+
+    /**
+     * @param string $methodName
+     * @return void
+     */
+    public function never(string $methodName): void
+    {
+        $this->mockMethod->add(
+            $methodName, fn() => throw new NeverMethodException("Unexpected method call: $methodName. This method should never be invoked.")
+        );
+    }
 }
