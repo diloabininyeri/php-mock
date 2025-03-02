@@ -158,6 +158,17 @@ class MockMethod implements MockMethodInterface
     }
 
     /**
+     * @param string $methodName
+     * @param mixed $return
+     * @return void
+     */
+    public function addIfNotDefined(string $methodName,mixed $return): void
+    {
+        if (!$this->hasMethodMock($methodName)) {
+            $this->mockMethod($methodName, $return);
+        }
+    }
+    /**
      * @param Closure $closure
      * @return void
      */

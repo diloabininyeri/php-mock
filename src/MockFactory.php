@@ -5,6 +5,7 @@ namespace Zeus\Mock;
 
 use ReflectionException;
 use Closure;
+use Throwable;
 
 /**
  * @mixin MockMethodInterface
@@ -159,4 +160,117 @@ class MockFactory
             return $response;
         });
     }
+
+    /**
+     * @param int $delay
+     * @param string $methodName
+     * @param mixed $response
+     * @return void
+     */
+    public function afterDelay(int $delay, string $methodName, mixed $response): void
+    {
+        $this->mockMethod->add($methodName, function (...$args) use ($delay, $response) {
+            if ($response instanceof Closure) {
+                $returnValue = $response(...$args);
+                sleep($delay);
+                return $returnValue;
+            }
+            $returnValue = $response;
+            sleep($delay);
+            return $returnValue;
+        });
+    }
+
+    /**
+     * @param int $delay
+     * @param string $methodName
+     * @param mixed $response
+     * @return void
+     */
+    public function beforeDelay(int $delay, string $methodName, mixed $response): void
+    {
+        $this->mockMethod->add($methodName, function (...$args)use($response,$delay) {
+            sleep($delay);
+            if ($response instanceof Closure) {
+                return $response(...$args);
+            }
+            return $response;
+        });
+    }
+
+    /**
+     * @param string $methodName
+     * @param mixed $response
+     * @return void
+     */
+    public function withArgs(string $methodName, array $arguments, mixed $response): void
+    {
+        $this->mockMethod->add($methodName, function (...$actualArgs) use ($arguments, $response,$methodName) {
+            if ($actualArgs === $arguments) {
+                if ($response instanceof Closure) {
+                    return $response(...$actualArgs);
+                }
+                return $response;
+            }
+            throw new WithArgsMethodException(
+                "Unexpected arguments for method $methodName. Expected: ". json_encode($arguments). ", got: ". json_encode($actualArgs)
+            );
+        });
+    }
+
+    /**
+     * @param string $methodName
+     * @param Closure $afterClosure
+     * @return void
+     */
+    public function after(string $methodName,Closure $afterClosure):void
+    {
+        $mainResponseClosure=$this->mockMethod->getMockMethod($methodName);
+         $this->mockMethod->add($methodName, function (...$args) use ($afterClosure,$mainResponseClosure) {
+             $returnValue=$mainResponseClosure(...$args);
+             $afterClosure($returnValue);
+             return $returnValue;
+        });
+    }
+
+    /**
+     * @param array<string,mixed> $responses
+     * @return void
+     */
+    public function applyDefaultMockMethods(array $responses):void
+    {
+        foreach ($responses as $key => $response) {
+            $this->mockMethod->addIfNotDefined($key, $response);
+        }
+    }
+
+    /**
+     * @param string $methodName
+     * @param Throwable $exception
+     * @return void
+     */
+    public function throwsException(string $methodName, Throwable $exception): void
+    {
+        $this->mockMethod->add($methodName, function () use ($exception) {
+            throw $exception;
+        });
+    }
+
+    /**
+     * @param string $methodName
+     * @param callable $argumentMatcher
+     * @param mixed $response
+     * @return void
+     */
+    public function withArgumentsMatching(string $methodName, callable $argumentMatcher, mixed $response): void
+    {
+        $this->mockMethod->add($methodName, function (...$args) use ($argumentMatcher, $response,$methodName) {
+            if ($argumentMatcher(...$args)) {
+                return $response;
+            }
+            throw new ArgumentMismatchException("Arguments don't match for method $methodName.");
+        });
+    }
+
+
 }
