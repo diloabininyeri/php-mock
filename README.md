@@ -614,3 +614,16 @@ echo $dateInstance->now(); //2012-10-10
 echo $dateInstance->now(); //2012-10-11
 
 ```
+*** The once method in the MockFactory ande MockMethod
+
+```php
+$mockFactory = new MockFactory();
+$mockFactory->once(function (MockMethod $method) {
+    $method->add('now', '2012');
+});
+
+$dateInstance = $mockFactory->createMock(Date::class);
+
+$dateInstance->now();
+$dateInstance->now(); //it will throw an exception, because we allowed to this method to just once 
+```

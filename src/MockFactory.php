@@ -25,7 +25,7 @@ class MockFactory
      * @param MockMethod $mockMethod
      * @return self
      */
-    public static function from(MockMethod $mockMethod):self
+    public static function from(MockMethod $mockMethod): self
     {
         return new self($mockMethod);
     }
@@ -75,7 +75,7 @@ class MockFactory
      * @param Closure $closure
      * @return $this
      */
-    public function onMockInstanceCreated(Closure $closure):self
+    public function onMockInstanceCreated(Closure $closure): self
     {
         $this->mockMethod->mockMethod('object.on.created', $closure);
         return $this;
@@ -95,7 +95,7 @@ class MockFactory
      * @param string $methodName
      * @return int
      */
-    public function getCallCount(string $methodName):int
+    public function getCallCount(string $methodName): int
     {
         return $this->mockMethod->getCallCount($methodName);
     }
@@ -113,10 +113,19 @@ class MockFactory
      * @param array $returns
      * @return void
      */
-    public function addConsecutive(string $methodName, array $returns):void
+    public function addConsecutive(string $methodName, array $returns): void
     {
         $this->mockMethod->mockMethod($methodName, function () use (&$returns) {
             return array_shift($returns);
         });
+    }
+
+    /**
+     * @param Closure $mockMethodClosure
+     * @return void
+     */
+    public function once(Closure $mockMethodClosure): void
+    {
+        $this->mockMethod->once($mockMethodClosure);
     }
 }
