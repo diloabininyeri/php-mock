@@ -6,7 +6,7 @@ namespace Zeus\Mock;
 use Closure;
 use ReflectionException;
 use Throwable;
-use Zeus\Mock\Exceptions\{ArgumentMismatchException,
+use Zeus\Mock\Exceptions\{WithArgumentMismatchException,
     AtMostMethodException,
     NeverMethodException,
     WithArgsMethodException};
@@ -272,7 +272,7 @@ class MockObjectFactory
             if ($argumentMatcher(...$args)) {
                 return $response;
             }
-            throw new ArgumentMismatchException("Arguments don't match for method $methodName.");
+            throw new WithArgumentMismatchException("Arguments don't match for method $methodName.");
         });
     }
 
