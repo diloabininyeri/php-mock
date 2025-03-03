@@ -7,7 +7,7 @@ use PDOStatement;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\MockObjectFactory;
 
 /**
  *
@@ -22,7 +22,7 @@ class MockWithPdoWithoutConnectTest extends TestCase
     #[Test]
     public function pdoWithoutConnect():void
     {
-        $mockFactory = new MockFactory();
+        $mockFactory = new MockObjectFactory();
 
         $mockStatement = $mockFactory->createMock(PDOStatement::class);
         $mockFactory->mockMethod('execute', fn($params) => true);

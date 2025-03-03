@@ -4,7 +4,7 @@ namespace Zeus\Mock\Tests\unit;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Zeus\Mock\MockFunction;
+use Zeus\Mock\ScopedFunctionMocker;
 
 class MockOverrideAbleFunctionTest extends TestCase
 {
@@ -14,7 +14,7 @@ class MockOverrideAbleFunctionTest extends TestCase
     public function override():void
     {
 
-        $mock = new MockFunction();
+        $mock = new ScopedFunctionMocker();
         $mock->add('time', function () {
             return 100;
         });
@@ -31,7 +31,7 @@ class MockOverrideAbleFunctionTest extends TestCase
         $mock->endScope();
 
 
-        $mock1 = new MockFunction();
+        $mock1 = new ScopedFunctionMocker();
         $mock1->add('time', function () {
             return 99;
         });

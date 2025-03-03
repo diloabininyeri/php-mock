@@ -4,12 +4,15 @@ namespace Zeus\Mock;
 
 use Closure;
 use ReflectionObject;
+use Zeus\Mock\Exceptions\InternalObjectException;
+use Zeus\Mock\Exceptions\NamespaceNotFoundException;
+use Zeus\Mock\Exceptions\OnceMockFunctionException;
 use function call_user_func;
 
 /**
  *
  */
-class MockFunction
+class ScopedFunctionMocker
 {
     /**
      * @var array<string,Closure>
@@ -29,7 +32,7 @@ class MockFunction
      */
     private bool $isBuilt = false;
     /**
-     * @var MockFunction
+     * @var ScopedFunctionMocker
      */
     private static self $instances;
 
@@ -126,7 +129,7 @@ class MockFunction
         if (in_array($name, $this->onceFunctions, true)) {
             $calledCount = $this->getCalledCountInScope($name);
             if ($calledCount !== 0) {
-                throw new OnceMockFunction("$name cant be called more than once ");
+                throw new OnceMockFunctionException("$name cant be called more than once ");
             }
         }
         return $this->executeWithEffect(
@@ -178,10 +181,10 @@ class MockFunction
             static::$createdFunctions[] = $name;
 
             $code .= "function $name() {\n";
-            $code .= "    if (\Zeus\Mock\MockFunction::runningScope()) {\n";
-            $code .= "        return \Zeus\Mock\MockFunction::callMockFunction('$name', func_get_args());\n";
+            $code .= "    if (\Zeus\Mock\ScopedFunctionMocker::runningScope()) {\n";
+            $code .= "        return \Zeus\Mock\ScopedFunctionMocker::callMockFunction('$name', func_get_args());\n";
             $code .= "    }\n";
-            $code .= "    return \Zeus\Mock\MockFunction::callRealFunction('$name', ...func_get_args());\n";
+            $code .= "    return \Zeus\Mock\ScopedFunctionMocker::callRealFunction('$name', ...func_get_args());\n";
 
             $code .= "}\n";
         }
@@ -223,7 +226,7 @@ class MockFunction
         if (preg_match('/\bnamespace\s+([^;]+);/', file_get_contents($trace[0]['file']), $matches)) {
             return trim($matches[1]);
         }
-        throw new NamespaceNotFound('the namespace keyword could not find');
+        throw new NamespaceNotFoundException('the namespace keyword could not find');
     }
 
 
@@ -298,7 +301,7 @@ class MockFunction
         }
 
         if (empty($reflectionObject->getNamespaceName())) {
-            throw new NamespaceNotFound('The namespace keyword could not find in object: ');
+            throw new NamespaceNotFoundException('The namespace keyword could not find in object: ');
         }
         $this->scope($reflectionObject->getNamespaceName());
         $result = $closure($object);

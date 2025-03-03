@@ -5,7 +5,7 @@ namespace Zeus\Mock\Tests\unit;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\MockObjectFactory;
 use Zeus\Mock\Tests\stubs\User;
 use Zeus\Mock\Tests\stubs\UserRepositoryInterface;
 
@@ -21,7 +21,7 @@ class GuaranteeTypeHintingTest extends TestCase
     #[Test]
     public function testUserTypeHinting(): void
     {
-        $mockFactory = new MockFactory();
+        $mockFactory = new MockObjectFactory();
         $mockFactory->mockMethod('getId', function () {
             return 999;
         });
@@ -46,7 +46,7 @@ class GuaranteeTypeHintingTest extends TestCase
     #[Test]
     public function testInterfaceTypeHinting(): void
     {
-        $mockFactory = new MockFactory();
+        $mockFactory = new MockObjectFactory();
 
         $mockFactory->mockMethod('getById', function () {
             return 999;

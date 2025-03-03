@@ -4,14 +4,14 @@ namespace Zeus\Mock\Tests\unit;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Zeus\Mock\MockFunction;
+use Zeus\Mock\ScopedFunctionMocker;
 
 class GlobalFunctionCountTest extends TestCase
 {
     #[Test]
     public function time(): void
     {
-        $mockFunction = new MockFunction();
+        $mockFunction = new ScopedFunctionMocker();
 
 
         $mockFunction->add('time', function () {

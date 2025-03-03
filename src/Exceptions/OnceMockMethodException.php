@@ -1,6 +1,6 @@
 <?php
 
-namespace Zeus\Mock;
+namespace Zeus\Mock\Exceptions;
 
 use RuntimeException;
 

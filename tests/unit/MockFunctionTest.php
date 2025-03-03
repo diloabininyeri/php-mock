@@ -4,7 +4,7 @@ namespace Zeus\Mock\Tests\unit;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Zeus\Mock\MockFunction;
+use Zeus\Mock\ScopedFunctionMocker;
 
 class MockFunctionTest extends TestCase
 {
@@ -14,7 +14,7 @@ class MockFunctionTest extends TestCase
     public function time(): void
     {
 
-        $m = new MockFunction();
+        $m = new ScopedFunctionMocker();
         $m->add('time', function () {
             return 100;
         });
@@ -31,7 +31,7 @@ class MockFunctionTest extends TestCase
     public function sleep(): void
     {
 
-        $m = new MockFunction();
+        $m = new ScopedFunctionMocker();
         $m->add('sleep', function (int $m) {
             return $m;
         });

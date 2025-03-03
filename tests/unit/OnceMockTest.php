@@ -4,8 +4,8 @@ namespace Zeus\Mock\Tests\unit;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Zeus\Mock\MockFunction;
-use Zeus\Mock\OnceMockFunction;
+use Zeus\Mock\Exceptions\OnceMockFunctionException;
+use Zeus\Mock\ScopedFunctionMocker;
 
 class OnceMockTest extends TestCase
 {
@@ -15,8 +15,8 @@ class OnceMockTest extends TestCase
     public function onceMock(): void
     {
 
-        $mockFunction = new MockFunction();
-        $mockFunction->once(function (MockFunction $function) {
+        $mockFunction = new ScopedFunctionMocker();
+        $mockFunction->once(function (ScopedFunctionMocker $function) {
             $function->add('time', function () {
                 return 100;
             });
@@ -24,7 +24,7 @@ class OnceMockTest extends TestCase
 
         $mockFunction->scope();
         $this->assertEquals(100, time());
-        $this->expectException(OnceMockFunction::class);
+        $this->expectException(OnceMockFunctionException::class);
         time();
         $mockFunction->endScope();
         $this->assertNotEquals(100, time());

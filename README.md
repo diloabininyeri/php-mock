@@ -18,9 +18,9 @@ composer require zeus/mock
 ## Example Usage
 
 ```php
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\MockObjectFactory;
 
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 
 // Create a mock instance of a class
 $mockObject = $mockFactory->createMock(SomeClass::class);
@@ -39,7 +39,7 @@ interface Logger {
     public function log(string $message): void;
 }
 
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 
 // Create a mock instance of an interface
 $mockLogger = $mockFactory->createMock(Logger::class);
@@ -67,7 +67,7 @@ class DatabaseService {
     }
 }
 
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 
 // Mock the Logger interface
 $mockLogger = $mockFactory->createMock(Logger::class);
@@ -96,7 +96,7 @@ class SomeService {
     }
 }
 
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactoryMock();
 
 // Create a mock instance of SomeService
 $mockService = $mockFactory->createMock(SomeService::class);
@@ -137,7 +137,7 @@ Here is a basic example class that demonstrates how to use the `MockFactory` in 
 
 ```php
 <?php
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\MockObjectFactory;
 interface Logger {
     public function log(string $message): void;
 }
@@ -162,7 +162,7 @@ class DatabaseService {
 }
 
 
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 
 // Create a mock Logger interface
 $mockLogger = $mockFactory->createMock(Logger::class);
@@ -216,14 +216,14 @@ MockFactory is a powerful tool for mocking interfaces in PHP, allowing you to cr
 ### Example
 
 ```php
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\MockObjectFactory;
 
 interface PersonInterface
 {
     public function getName(): string;
 }
 
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 
 // Create a mock instance of PersonInterface
 $personService = $mockFactory->createMock(PersonInterface::class);
@@ -245,7 +245,7 @@ interface MYInterface
 {
     public function foo():void;
 }
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 
 echo $mockFactory->generateCode(MYInterface::class,'CustomClassName');
 
@@ -271,9 +271,9 @@ for example, let's mock the sleep function in the example.
 
 namespace Foo;
 
-use Zeus\Mock\MockFunction;
+use Zeus\Mock\ScopedFunctionMocker;
 
-$mockFunction=new MockFunction();
+$mockFunction=new ScopedFunctionMocker();
 
 $mockFunction->add('sleep',function (int $seconds){
     return "seconds: $seconds";
@@ -296,7 +296,7 @@ echo time();//it'll return the real time because it's out of the scope
 or short syntax, Return value can be added to mock function in two ways, type 1 and type 2.
 ```php
 
-$mockFunction = new MockFunction();
+$mockFunction = new ScopedFunctionMocker();
 //type 1
 $mockFunction->add('date','2011');
 
@@ -307,6 +307,7 @@ $mockFunction->add('date',function (){
 ```
 ### Scope management
 Sometimes we may want to use mock function for objects. Here is an example; we can determine the scope area with the scope method.
+
 ```php
 
 namespace Foo\Bar;
@@ -325,9 +326,9 @@ class Date
 namespace App;
 
 use Foo\Bar\Date;
-use Zeus\Mock\MockFunction;
+use Zeus\Mock\ScopedFunctionMocker;
 
-$mock=new MockFunction()
+$mock=new ScopedFunctionMocker()
 $mock->add('time',fn()=>100);
 
 $mock->scope('\\Foo\\Bar');
@@ -340,6 +341,7 @@ echo new Date()->now(); //not 100,its return now
 ```
 ### the runWithMock method in the MockFunction object
 This method defines functions in your mock object and overrides them with functions, like pulling a rabbit out of a hat.
+
 ```php
 namespace Foo\Bar;
 
@@ -357,9 +359,9 @@ class Date
 namespace App;
 
 use Foo\Bar\Date;
-use Zeus\Mock\MockFunction;
+use Zeus\Mock\ScopedFunctionMocker;
 
-$mock=new MockFunction()
+$mock=new ScopedFunctionMocker()
 $mock->add('time',fn()=>100);
 
 echo $mock->runWithmock(new Date(), function (Date $date) {
@@ -373,10 +375,10 @@ PDO object will work without database connection, do not worry.
 
 ```php
 
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\MockObjectFactory;
 
 
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 
 $mockStatement = $mockFactory->createMock(PDOStatement::class);
 $mockFactory->mockMethod('execute', fn($params) => true);
@@ -399,8 +401,9 @@ print_r($data);//['id' => 1, 'name' => 'Dilo Surucu']
 ```
 
 With the database connection, This part actually requires a database connection.
+
 ```php
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\MockObjectFactory;
 
 
 $dsn = 'mysql:host=127.0.0.1;dbname=test;port=3306';
@@ -409,7 +412,7 @@ $password = 'my-secret-pw';
 $options = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
 
 
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 $mockStatement = $mockFactory->createMock(PDOStatement::class);
 $mockFactory->mockMethod('execute', fn($params) => true);
 $mockFactory->mockMethod('fetch', fn($fetchMode) => ['id' => 1, 'name' => 'Dilo Surucu']);
@@ -452,7 +455,7 @@ $mockMethod->mockMethod('now', function (int $a) {
 });
 
 
-$mockFactory = new MockFactory($mockMethod);
+$mockFactory = new MockObjectFactory($mockMethod);
 $mockFactory
     ->onMockInstanceCreated(function (Date $date) {
         echo $date->test(); //test foo
@@ -468,7 +471,7 @@ You can get the parameters sent to the constructor as soon as it is instanced.
 $mockMethod = new MockMethod();
 
 
-$mockFactory = new MockFactory($mockMethod);
+$mockFactory = new MockObjectFactory($mockMethod);
 $mockFactory->onMockInstanceCreated(function (Date $dateInstance, string $date) {
     //$dateInstance
     //$date 2022-12-12
@@ -493,7 +496,7 @@ echo $mockMethod->getCallCount('getDate');//2
 ### number of mocked function calls
 We can get how many times the mocked function was called, inside the scope, outside the scope and in total.
 ```php
-$mockFunction = new MockFunction();
+$mockFunction = new ScopedFunctionMocker();
 
  $mockFunction->add('time', function () {
      return 100;
@@ -519,7 +522,7 @@ $mockFunction = new MockFunction();
 ### The restore mock function
 You can convert a mock function to php's original function, that is, restore it.
 ```php
-$mockFunction = new MockFunction();
+$mockFunction = new ScopedFunctionMocker();
 
 
 $mockFunction->addIfNotDefined('date', '2010-01-01');
@@ -536,7 +539,7 @@ $mockFunction->endScope();
 ```
 or
 ```php
-$mockFunction = new MockFunction();
+$mockFunction = new ScopedFunctionMocker();
 $mockFunction->addIfNotDefined('date', '2010-01-01');
 
 $mockFunction->runWithMock(new Date(), function (Date $date) use ($mockFunction) {
@@ -550,9 +553,9 @@ $mockFunction->runWithMock(new Date(), function (Date $date) use ($mockFunction)
 You may want mock functions to run only once.
 Here is the simple usage
 ```php
-$mockFunction = new MockFunction();
+$mockFunction = new ScopedFunctionMocker();
 
-$mockFunction->once(function (MockFunction $function){
+$mockFunction->once(function (ScopedFunctionMocker $function){
     $function->add('date', '2022-01-01');
     $function->add('time', 100);
 });
@@ -587,7 +590,7 @@ class Date
     }
 }
 
-$mockFunction = new MockFunction();
+$mockFunction = new ScopedFunctionMocker();
 $mockFunction->addConsecutive('date', [
     '2012-12-11',
     '2012-12-10',
@@ -604,7 +607,7 @@ $mockFunction->runWithMock(new Date(), function (Date $date) {
 ```
 **for the MockFactory**
 ```php
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 $mockFactory->addConsecutive('now', ['2012-10-9', '2012-10-10', '2012-10-11']);
 
 $dateInstance = $mockFactory->createMock(Date::class);
@@ -617,7 +620,7 @@ echo $dateInstance->now(); //2012-10-11
 **The once method in the MockFactory ande MockMethod**
 Used to guarantee that a method is executed only once, and throws an exception if multiple invocations are attempted.
 ```php
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 $mockFactory->once(function (MockMethod $method) {
     $method->add('now', '2012');
 });
@@ -630,7 +633,7 @@ $dateInstance->now(); //it will throw an exception, because we allowed to this m
 **The never method in the MockFactory ande MockMethod**
 This is a script to ensure that a method is never called during testing and throws an exception even if it is called.
 ```php
-$mockFactory = new MockFactory();
+$mockFactory = new MockObjectFactory();
 
 $mockFactory->never('now');
 
@@ -647,7 +650,7 @@ test($date);
 ***Limiting calls***
 You can specify the maximum number of times the methods are called. For example, let's write a method that runs at most three times.
 ```php
-$mockFactory = new MockFactory();
+$mockFactory = new \Zeus\Mock\MockObjectFactory();
 
 // Set the method to be called at most 3 times
 $mockFactory->atMost(3, 'now', function () {
