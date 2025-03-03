@@ -4,8 +4,8 @@ namespace Zeus\Mock\Tests\unit;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Zeus\Mock\AtMostMethodException;
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\Exceptions\AtMostMethodException;
+use Zeus\Mock\MockObjectFactory;
 use Zeus\Mock\Tests\stubs\Date;
 
 class AtMostMethodTest extends TestCase
@@ -16,7 +16,7 @@ class AtMostMethodTest extends TestCase
     public function atMostTest():void
     {
 
-        $mockFactory = new MockFactory();
+        $mockFactory = new MockObjectFactory();
         $mockFactory->atMost(3, 'now','2012');
         $dateInstance=$mockFactory->createMock(Date::class);
 

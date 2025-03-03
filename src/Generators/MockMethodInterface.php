@@ -1,9 +1,10 @@
 <?php
 
-namespace Zeus\Mock;
+namespace Zeus\Mock\Generators;
 
 
 use Closure;
+use Zeus\Mock\Mock\MockMethod;
 
 /**
  *

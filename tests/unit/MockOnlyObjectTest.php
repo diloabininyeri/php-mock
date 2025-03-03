@@ -5,7 +5,7 @@ namespace Zeus\Mock\Tests\unit;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\MockObjectFactory;
 use Zeus\Mock\Tests\stubs\User;
 
 class MockOnlyObjectTest extends TestCase
@@ -17,7 +17,7 @@ class MockOnlyObjectTest extends TestCase
     #[Test]
     public function userMethod():void
     {
-        $mockFactory = new MockFactory();
+        $mockFactory = new MockObjectFactory();
         $mockUser = $mockFactory->createMock(User::class);
         $mockFactory->mockMethod('getId', function () {
             return 10;

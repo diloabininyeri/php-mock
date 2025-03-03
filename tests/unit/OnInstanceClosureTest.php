@@ -5,7 +5,7 @@ namespace Zeus\Mock\Tests\unit;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
-use Zeus\Mock\MockFactory;
+use Zeus\Mock\MockObjectFactory;
 use Zeus\Mock\Tests\stubs\ExampleForOnInstanced;
 
 class OnInstanceClosureTest extends TestCase
@@ -18,7 +18,7 @@ class OnInstanceClosureTest extends TestCase
      */
     public function onInstanceClosure(): void
     {
-        $mockFactory = new MockFactory();
+        $mockFactory = new MockObjectFactory();
         $mockFactory->onMockInstanceCreated(function (ExampleForOnInstanced $example, string $message, bool $status) {
 
             $this->assertEquals('hello', $message);

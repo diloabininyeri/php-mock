@@ -3,17 +3,23 @@
 
 namespace Zeus\Mock;
 
-use ReflectionException;
 use Closure;
+use ReflectionException;
 use Throwable;
+use Zeus\Mock\Exceptions\{ArgumentMismatchException,
+    AtMostMethodException,
+    NeverMethodException,
+    WithArgsMethodException};
+use Zeus\Mock\Generators\MockClassGenerator;
+use Zeus\Mock\Generators\MockInterfaceGenerator;
+use Zeus\Mock\Generators\MockMethodInterface;
+use Zeus\Mock\Mock\MockMethod;
 
 /**
  * @mixin MockMethodInterface
  */
-class MockFactory
+class MockObjectFactory
 {
-
-
     /**
      * @param MockMethodInterface $mockMethod
      */
@@ -189,7 +195,7 @@ class MockFactory
      */
     public function beforeDelay(int $delay, string $methodName, mixed $response): void
     {
-        $this->mockMethod->add($methodName, function (...$args)use($response,$delay) {
+        $this->mockMethod->add($methodName, function (...$args) use ($response, $delay) {
             sleep($delay);
             if ($response instanceof Closure) {
                 return $response(...$args);
@@ -205,7 +211,7 @@ class MockFactory
      */
     public function withArgs(string $methodName, array $arguments, mixed $response): void
     {
-        $this->mockMethod->add($methodName, function (...$actualArgs) use ($arguments, $response,$methodName) {
+        $this->mockMethod->add($methodName, function (...$actualArgs) use ($arguments, $response, $methodName) {
             if ($actualArgs === $arguments) {
                 if ($response instanceof Closure) {
                     return $response(...$actualArgs);
@@ -213,7 +219,7 @@ class MockFactory
                 return $response;
             }
             throw new WithArgsMethodException(
-                "Unexpected arguments for method $methodName. Expected: ". json_encode($arguments). ", got: ". json_encode($actualArgs)
+                "Unexpected arguments for method $methodName. Expected: " . json_encode($arguments) . ", got: " . json_encode($actualArgs)
             );
         });
     }
@@ -223,13 +229,13 @@ class MockFactory
      * @param Closure $afterClosure
      * @return void
      */
-    public function after(string $methodName,Closure $afterClosure):void
+    public function after(string $methodName, Closure $afterClosure): void
     {
-        $mainResponseClosure=$this->mockMethod->getMockMethod($methodName);
-         $this->mockMethod->add($methodName, function (...$args) use ($afterClosure,$mainResponseClosure) {
-             $returnValue=$mainResponseClosure(...$args);
-             $afterClosure($returnValue);
-             return $returnValue;
+        $mainResponseClosure = $this->mockMethod->getMockMethod($methodName);
+        $this->mockMethod->add($methodName, function (...$args) use ($afterClosure, $mainResponseClosure) {
+            $returnValue = $mainResponseClosure(...$args);
+            $afterClosure($returnValue);
+            return $returnValue;
         });
     }
 
@@ -237,7 +243,7 @@ class MockFactory
      * @param array<string,mixed> $responses
      * @return void
      */
-    public function applyDefaultMockMethods(array $responses):void
+    public function applyDefaultMockMethods(array $responses): void
     {
         foreach ($responses as $key => $response) {
             $this->mockMethod->addIfNotDefined($key, $response);
@@ -251,9 +257,7 @@ class MockFactory
      */
     public function throwsException(string $methodName, Throwable $exception): void
     {
-        $this->mockMethod->add($methodName, function () use ($exception) {
-            throw $exception;
-        });
+        $this->mockMethod->add($methodName, fn (...$args)=>throw $exception);
     }
 
     /**
@@ -264,7 +268,7 @@ class MockFactory
      */
     public function withArgumentsMatching(string $methodName, callable $argumentMatcher, mixed $response): void
     {
-        $this->mockMethod->add($methodName, function (...$args) use ($argumentMatcher, $response,$methodName) {
+        $this->mockMethod->add($methodName, function (...$args) use ($argumentMatcher, $response, $methodName) {
             if ($argumentMatcher(...$args)) {
                 return $response;
             }

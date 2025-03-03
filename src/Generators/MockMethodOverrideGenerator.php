@@ -1,6 +1,6 @@
 <?php
 
-namespace Zeus\Mock;
+namespace Zeus\Mock\Generators;
 
 use ReflectionException;
 use ReflectionMethod;

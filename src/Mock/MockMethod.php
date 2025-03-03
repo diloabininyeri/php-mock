@@ -1,9 +1,13 @@
 <?php
 
-namespace Zeus\Mock;
+namespace Zeus\Mock\Mock;
 
 use Closure;
 use JsonException;
+use Zeus\Mock\Exceptions\MockMethodNotFoundException;
+use Zeus\Mock\Exceptions\OnceMockMethodException;
+use Zeus\Mock\Generators\MockMethodInterface;
+use Zeus\Mock\Table\TableMockMethod;
 
 /**
  *

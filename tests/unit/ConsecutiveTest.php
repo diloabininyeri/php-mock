@@ -4,7 +4,7 @@ namespace Zeus\Mock\Tests\unit;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Zeus\Mock\MockFunction;
+use Zeus\Mock\ScopedFunctionMocker;
 use Zeus\Mock\Tests\stubs\Date;
 
 class ConsecutiveTest extends TestCase
@@ -14,7 +14,7 @@ class ConsecutiveTest extends TestCase
     #[Test]
     public function date():void
     {
-        $mockFunction = new MockFunction();
+        $mockFunction = new ScopedFunctionMocker();
         $mockFunction->addConsecutive('date',
             [
                 '2022-01-01',
