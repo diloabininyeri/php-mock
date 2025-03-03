@@ -56,7 +56,7 @@ abstract class MockMethodOverrideGenerator
                 $mockCode .= "        return parent::$methodName($argList);\n";
             }
         } else {
-            $mockCode .= "        throw new \\Zeus\\Mock\\MockMethodNotFoundException('Method $methodName is not mocked.');\n";
+            $mockCode .= "        throw new \\Zeus\\Mock\\Exceptions\\MockMethodNotFoundException('Method $methodName is not mocked.');\n";
         }
 
         $mockCode .= "    }\n";
@@ -206,7 +206,7 @@ abstract class MockMethodOverrideGenerator
         if ($this->mockFactory->hasMethodMock($methodName)) {
             return $this->mockFactory->invokeMockedMethod($methodName, $arguments);
         }
-        throw new \Zeus\Mock\MockMethodNotFoundException("Method $methodName not found or mocked.");
+        throw new \Zeus\Mock\Exceptions\MockMethodNotFoundException("Method $methodName not found or mocked.");
     }';
     }
 }
