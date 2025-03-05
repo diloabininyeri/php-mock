@@ -320,7 +320,7 @@ readonly class MockMethodBehaviors
             $logMessage = sprintf(
                 "[%s] %s::%s called with arguments: %s and returned: %s\n",
                 date('Y-m-d H:i:s'),
-                $args['class'],
+                $args['class'] ?? 'interface',
                 $args['methodName'],
                 json_encode($args['arguments'], JSON_THROW_ON_ERROR),
                 json_encode($args['returnValue'], JSON_THROW_ON_ERROR)

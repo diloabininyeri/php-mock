@@ -275,13 +275,16 @@ class MockMethod implements MockMethodInterface
         }
     }
 
-    /**
-     * @return string
+    /***
+     * @return string|null
      */
-    private function getParentClassName(): string
+    private function getParentClassName(): ?string
     {
         if ($this->originalClassName) {
             return $this->originalClassName;
+        }
+        if (!$this->getMockInstance()) {
+            return null;
         }
         $reflectionObject = new ReflectionObject($this->mockedObjectInstance);
         $this->originalClassName = $reflectionObject->getParentClass()->getName();
