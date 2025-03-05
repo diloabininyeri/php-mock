@@ -3,12 +3,15 @@
 namespace Zeus\Mock\Mock;
 
 use Closure;
+use RuntimeException;
 use Throwable;
 use Zeus\Mock\Exceptions\AtLeastMethodException;
 use Zeus\Mock\Exceptions\AtMostMethodException;
 use Zeus\Mock\Exceptions\NeverMethodException;
+use Zeus\Mock\Exceptions\TimeoutException;
 use Zeus\Mock\Exceptions\WithArgsMethodException;
 use Zeus\Mock\Exceptions\WithArgumentMismatchException;
+use function microtime;
 
 /**
  *
@@ -280,4 +283,58 @@ readonly class MockMethodBehaviors
         }
         return $returnValue;
     }
+
+    /**
+     * @param int $timeout
+     * @param string $methodName
+     * @param mixed $return
+     * @return void
+     */
+    public function withTimeout(int $timeout, string $methodName, mixed $return): void
+    {
+        $this->mockMethod->add($methodName, function (...$args) use ($timeout, $return, $methodName) {
+            $startTime = microtime(true);
+            $response = $this->resolveResponseWithSideEffect($return, args: $args);
+            $elapsedTime = microtime(true) - $startTime;
+            if ($elapsedTime > $timeout) {
+                throw new TimeoutException("Method $methodName timed out.");
+            }
+            return $response;
+
+        });
+    }
+
+    /**
+     * @param Closure $closure
+     * @return void
+     */
+    public function always(Closure $closure): void
+    {
+        $this->mockMethod->always($closure);
+    }
+
+    public function log(string $logFile): void
+    {
+        $this->always(function (array $args) use ($logFile) {
+
+            $logMessage = sprintf(
+                "[%s] %s::%s called with arguments: %s and returned: %s\n",
+                date('Y-m-d H:i:s'),
+                $args['class'],
+                $args['methodName'],
+                json_encode($args['arguments'], JSON_THROW_ON_ERROR),
+                json_encode($args['returnValue'], JSON_THROW_ON_ERROR)
+            );
+
+            $logFile = 'mock_test.log';
+            $logDirectory = dirname($logFile);
+
+            if (!is_dir($logDirectory) && !mkdir($logDirectory, 0755, true) && !is_dir($logDirectory)) {
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $logDirectory)); //NOSONAR
+            }
+
+            file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+        });
+    }
+
 }

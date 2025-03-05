@@ -6,6 +6,7 @@ use Closure;
 use JsonException;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionObject;
 use Zeus\Mock\Exceptions\MockMethodNotFoundException;
 use Zeus\Mock\Exceptions\OnceMockMethodException;
 use Zeus\Mock\Exceptions\SpyMethodException;
@@ -42,6 +43,17 @@ class MockMethod implements MockMethodInterface
      * @var object|null
      */
     private ?object $mockedObjectInstance = null;
+
+
+    /**
+     * @var array
+     */
+    private array $alwaysMockMethods = [];
+
+    /***
+     * @var string|null
+     */
+    private ?string $originalClassName = null;
 
 
     /***
@@ -95,6 +107,9 @@ class MockMethod implements MockMethodInterface
         $returnValue = call_user_func_array($this->methods[$methodName], $arguments);
         $this->incrementCount($methodName);
         $this->debuggingMethod($methodName, $arguments, $returnValue);
+        $this->invokeAlwaysMethods(
+            compact('returnValue', 'arguments', 'methodName')
+        );
         return $returnValue;
     }
 
@@ -234,6 +249,43 @@ class MockMethod implements MockMethodInterface
             return $parentClass->getMethod($methodName)->invoke($mockInstance, ...$args);
         }
         return null;
+    }
+
+    /***
+     * @param Closure $callback
+     * @return void
+     */
+    public function always(Closure $callback): void
+    {
+        $this->alwaysMockMethods[] = $callback;
+    }
+
+    /**
+     * @param array $arguments
+     * @return void
+     */
+    private function invokeAlwaysMethods(array $arguments): void
+    {
+
+        $args =& $arguments['arguments'];
+        $arguments['class'] = $this->getParentClassName();
+        array_pop($args);
+        foreach ($this->alwaysMockMethods as $method) {
+            $method($arguments);
+        }
+    }
+
+    /**
+     * @return string
+     */
+    private function getParentClassName(): string
+    {
+        if ($this->originalClassName) {
+            return $this->originalClassName;
+        }
+        $reflectionObject = new ReflectionObject($this->mockedObjectInstance);
+        $this->originalClassName = $reflectionObject->getParentClass()->getName();
+        return $this->originalClassName;
     }
 }
 

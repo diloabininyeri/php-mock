@@ -667,3 +667,35 @@ echo $dateInstance->now(); // Outputs '2012-2-2'
 echo $dateInstance->now(); // AtMostMethodException: Method now can be called only 3 times.
 
 ```
+
+### logging and tracking the mock methods
+You can listen to all incoming events with mock methods,
+we do this with the `always` method, this takes a closure as a parameter, here is an example
+and also for logging, it is enough to give the path of a simple log file
+```php
+$mockObjectFactory = new MockObjectFactory();
+
+//It's for the log
+$mockObjectFactory->log('mock_test.log');
+
+//This will always work, i.e., every time a mock method is triggered.
+$mockObjectFactory->always(function ($args) {
+
+    //$args['class'];
+    //$args['methodName'];
+    //$args['arguments'];
+    //$args['returnValue'];
+  
+});
+
+$mockObjectFactory->withTimeout(1, 'now', function () {
+    return 100;
+});
+
+
+$dateInstance = $mockObjectFactory->createMock(Date::class);
+
+
+$dateInstance->now();
+
+```
