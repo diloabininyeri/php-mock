@@ -4,8 +4,11 @@ namespace Zeus\Mock\Mock;
 
 use Closure;
 use JsonException;
+use ReflectionClass;
+use ReflectionException;
 use Zeus\Mock\Exceptions\MockMethodNotFoundException;
 use Zeus\Mock\Exceptions\OnceMockMethodException;
+use Zeus\Mock\Exceptions\SpyMethodException;
 use Zeus\Mock\Generators\MockMethodInterface;
 use Zeus\Mock\Table\TableMockMethod;
 
@@ -38,7 +41,7 @@ class MockMethod implements MockMethodInterface
     /**
      * @var object|null
      */
-    private ?object $mockedObjectInstance=null;
+    private ?object $mockedObjectInstance = null;
 
 
     /***
@@ -210,6 +213,27 @@ class MockMethod implements MockMethodInterface
     public function getMockInstance(): ?object
     {
         return $this->mockedObjectInstance;
+    }
+
+    /**
+     * @param string $methodName
+     * @param mixed ...$args
+     * @return mixed
+     * @throws ReflectionException
+     */
+    public function callOriginalMethod(string $methodName, array $args): mixed
+    {
+        $mockInstance = $this->getMockInstance();
+        if (empty($mockInstance)) {
+            throw new SpyMethodException("the $methodName doesn't support spy method,because its a method of the interface");
+        }
+        $reflection = new ReflectionClass($mockInstance);
+        $parentClass = $reflection->getParentClass();
+
+        if ($parentClass && $parentClass->hasMethod($methodName)) {
+            return $parentClass->getMethod($methodName)->invoke($mockInstance, ...$args);
+        }
+        return null;
     }
 }
 

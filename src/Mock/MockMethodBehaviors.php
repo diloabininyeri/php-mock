@@ -3,19 +3,17 @@
 namespace Zeus\Mock\Mock;
 
 use Closure;
-use ReflectionClass;
 use Throwable;
 use Zeus\Mock\Exceptions\AtLeastMethodException;
 use Zeus\Mock\Exceptions\AtMostMethodException;
 use Zeus\Mock\Exceptions\NeverMethodException;
-use Zeus\Mock\Exceptions\SpyMethodException;
 use Zeus\Mock\Exceptions\WithArgsMethodException;
 use Zeus\Mock\Exceptions\WithArgumentMismatchException;
 
 /**
  *
  */
-readonly class MethodCountRules
+readonly class MockMethodBehaviors
 {
 
     /**
@@ -60,21 +58,21 @@ readonly class MethodCountRules
     /***
      * @param int $count
      * @param string $methodName
-     * @param mixed $response
+     * @param mixed $return
      * @return void
      */
-    public function atMost(int $count, string $methodName, mixed $response): void
+    public function atMost(int $count, string $methodName, mixed $return): void
     {
-        $this->mockMethod->add($methodName, function (...$args) use ($count, $response, $methodName) {
+        $this->mockMethod->add($methodName, function (...$args) use ($count, $return, $methodName) {
             static $callCount = 0;
             if ($callCount >= $count) {
                 throw new AtMostMethodException("Method $methodName must be called at most $count times.");
             }
             $callCount++;
-            if ($response instanceof Closure) {
-                return $response(...$args);
-            }
-            return $response;
+            return $this->resolveResponseWithSideEffect(
+                return: $return,
+                args: $args
+            );
         });
     }
 
@@ -82,20 +80,13 @@ readonly class MethodCountRules
      * @noinspection PhpUnused
      * @param int $delay
      * @param string $methodName
-     * @param mixed $response
+     * @param mixed $return
      * @return void
      */
-    public function afterDelay(int $delay, string $methodName, mixed $response): void
+    public function afterDelay(int $delay, string $methodName, mixed $return): void
     {
-        $this->mockMethod->add($methodName, function (...$args) use ($delay, $response) {
-            if ($response instanceof Closure) {
-                $returnValue = $response(...$args);
-                sleep($delay);
-                return $returnValue;
-            }
-            $returnValue = $response;
-            sleep($delay);
-            return $returnValue;
+        $this->mockMethod->add($methodName, function (...$args) use ($delay, $return) {
+            return $this->resolveResponseWithSideEffect($return, fn() => sleep($delay), $args);
         });
     }
 
@@ -110,32 +101,29 @@ readonly class MethodCountRules
     {
         $this->mockMethod->add($methodName, function (...$args) use ($response, $delay) {
             sleep($delay);
-            if ($response instanceof Closure) {
-                return $response(...$args);
-            }
-            return $response;
+            return $this->resolveResponseWithSideEffect(return: $response, args: $args);
         });
     }
 
     /**
      * @param string $methodName
      * @param array $arguments
-     * @param mixed $response
+     * @param mixed $return
      * @return void
      */
-    public function withArgs(string $methodName, array $arguments, mixed $response): void
+    public function withArgs(string $methodName, array $arguments, mixed $return): void
     {
-        $this->mockMethod->add($methodName, function (...$actualArgs) use ($arguments, $response, $methodName) {
+        $this->mockMethod->add($methodName, function (...$actualArgs) use ($arguments, $return, $methodName) {
 
             $mockInstance = null;
             if ($this->mockMethod->getMockInstance()) {
                 $mockInstance = array_pop($actualArgs);
             }
             if ($actualArgs === $arguments) {
-                if ($response instanceof Closure) {
-                    return $this->bindMockInstanceToResponseClosure($mockInstance, $response, $actualArgs);
+                if ($return instanceof Closure) {
+                    return $this->applyMockInstanceToResponse($mockInstance, $return, $actualArgs);
                 }
-                return $response;
+                return $return;
             }
             throw new WithArgsMethodException(
                 "Unexpected arguments for method $methodName. Expected: " .
@@ -153,20 +141,23 @@ readonly class MethodCountRules
     {
         $mainResponseClosure = $this->mockMethod->getMockMethod($methodName);
         $this->mockMethod->add($methodName, function (...$args) use ($afterClosure, $mainResponseClosure) {
-            $returnValue = $mainResponseClosure(...$args);
-            $afterClosure($returnValue);
-            return $returnValue;
+
+            return $this->resolveResponseWithSideEffect(
+                $mainResponseClosure,
+                fn($return) => $afterClosure($return),
+                $args
+            );
         });
     }
 
     /**
      * @noinspection PhpUnused
-     * @param array<string,mixed> $responses
+     * @param array<string,mixed> $return
      * @return void
      */
-    public function applyDefaultMockMethods(array $responses): void
+    public function applyDefaultMockMethods(array $return): void
     {
-        foreach ($responses as $key => $response) {
+        foreach ($return as $key => $response) {
             $this->mockMethod->addIfNotDefined($key, $response);
         }
     }
@@ -185,21 +176,21 @@ readonly class MethodCountRules
      * @noinspection PhpUnused
      * @param string $methodName
      * @param callable $argumentMatcher
-     * @param mixed $response
+     * @param mixed $return
      * @return void
      */
-    public function withArgumentsMatching(string $methodName, callable $argumentMatcher, mixed $response): void
+    public function withArgumentsMatching(string $methodName, callable $argumentMatcher, mixed $return): void
     {
-        $this->mockMethod->add($methodName, function (...$args) use ($argumentMatcher, $response, $methodName) {
+        $this->mockMethod->add($methodName, function (...$args) use ($argumentMatcher, $return, $methodName) {
             $mockInstance = $this->mockMethod->getMockInstance();
             if ($mockInstance) {
                 array_pop($args);
             }
             if ($argumentMatcher(...$args)) {
-                if (is_callable($response)) {
-                    return $this->bindMockInstanceToResponseClosure($mockInstance, $response, $args);
+                if (is_callable($return)) {
+                    return $this->applyMockInstanceToResponse($mockInstance, $return, $args);
                 }
-                return $response;
+                return $return;
             }
             throw new WithArgumentMismatchException("Arguments don't match for method $methodName.");
         });
@@ -208,12 +199,12 @@ readonly class MethodCountRules
     /**
      * @param int $count
      * @param string $methodName
-     * @param mixed $response
+     * @param mixed $return
      * @return void
      */
-    public function atLeast(int $count, string $methodName, mixed $response): void
+    public function atLeast(int $count, string $methodName, mixed $return): void
     {
-        $this->mockMethod->add($methodName, function (...$args) use ($count, $response, $methodName) {
+        $this->mockMethod->add($methodName, function (...$args) use ($count, $return, $methodName) {
             static $callCount = 0;
             static $isRegistered = false;
             $callCount++;
@@ -226,41 +217,33 @@ readonly class MethodCountRules
                 $isRegistered = true;
             }
 
-            if (is_callable($response)) {
-                return $response(...$args);
-            }
-            return $response;
+            return $this->resolveResponseWithSideEffect(
+                return: $return,
+                args: $args
+            );
         });
     }
 
     /**
      * @param string $methodName
-     * @param mixed $response
+     * @param mixed $return
      * @return void
      */
-    public function spyMethod(string $methodName, mixed $response): void
+    public function spyMethod(string $methodName, mixed $return): void
     {
-        $this->mockMethod->add($methodName, function (...$args) use ($response, $methodName) {
-            if (empty($this->mockMethod->getMockInstance())) {
-                throw new SpyMethodException("the $methodName doesn't support spy method,because its a method of the interface");
-            }
-            $reflection = new ReflectionClass($this->mockMethod->getMockInstance());
-            $parentClass = $reflection->getParentClass();
-
-            if ($parentClass && $parentClass->hasMethod($methodName)) {
-                $method = $parentClass->getMethod($methodName);
-                $method->invoke($this->mockMethod->getMockInstance(), ...$args);
-            }
-
-            if (is_callable($response)) {
-                return $response(...$args);
-            }
-            return $response;
+        $this->mockMethod->add($methodName, function (...$args) use ($return, $methodName) {
+            $this->mockMethod->callOriginalMethod($methodName, $args);
+            return $this->resolveResponseWithSideEffect(return: $return, args: $args);
         });
-
     }
 
-    private function when(bool $condition, Closure $ifStatement, Closure $elseStatement): mixed
+    /**
+     * @param bool $condition
+     * @param Closure $ifStatement
+     * @param Closure $elseStatement
+     * @return mixed
+     */
+    private function ifElseCondition(bool $condition, Closure $ifStatement, Closure $elseStatement): mixed
     {
         if ($condition) {
             return $ifStatement();
@@ -274,12 +257,27 @@ readonly class MethodCountRules
      * @param array $actualArgs
      * @return mixed
      */
-    private function bindMockInstanceToResponseClosure(object $mockInstance, Closure $response, array $actualArgs): mixed
+    private function applyMockInstanceToResponse(object $mockInstance, Closure $response, array $actualArgs): mixed
     {
-        return $this->when(
+        return $this->ifElseCondition(
             !empty($mockInstance),
             fn() => $response([...$actualArgs, $mockInstance]),
             fn() => $response(...$actualArgs),
         );
+    }
+
+    /**
+     * @param mixed $return
+     * @param Closure|null $sideEffect
+     * @param array $args
+     * @return mixed
+     */
+    private function resolveResponseWithSideEffect(mixed $return, ?Closure $sideEffect = null, array $args = []): mixed
+    {
+        $returnValue = is_callable($return) ? $return(...$args) : $return;
+        if ($sideEffect) {
+            $sideEffect($returnValue);
+        }
+        return $returnValue;
     }
 }

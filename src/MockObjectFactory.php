@@ -8,23 +8,23 @@ use ReflectionException;
 use Zeus\Mock\Generators\MockClassGenerator;
 use Zeus\Mock\Generators\MockInterfaceGenerator;
 use Zeus\Mock\Generators\MockMethodInterface;
-use Zeus\Mock\Mock\MethodCountRules;
+use Zeus\Mock\Mock\MockMethodBehaviors;
 use Zeus\Mock\Mock\MockMethod;
 
 /**
  * @mixin MockMethodInterface
- * @mixin MethodCountRules
+ * @mixin MockMethodBehaviors
  */
 readonly class MockObjectFactory
 {
-    private MethodCountRules $methodCountRules;
+    private MockMethodBehaviors $mockMethodBehaviors;
     /**
      * @param MockMethodInterface $mockMethod
      */
     public function __construct(private MockMethodInterface $mockMethod = new MockMethod())
     {
         $this->mockMethod->mockMethod('object.on.created', fn(...$args) => null);
-        $this->methodCountRules = new MethodCountRules($this->mockMethod);
+        $this->mockMethodBehaviors = new MockMethodBehaviors($this->mockMethod);
     }
 
     /**
@@ -97,7 +97,7 @@ readonly class MockObjectFactory
         if (method_exists($this->mockMethod, $method)) {
             return $this->mockMethod->$method(...$arguments);
         }
-        return $this->methodCountRules->$method(...$arguments);
+        return $this->mockMethodBehaviors->$method(...$arguments);
     }
 
     /**
