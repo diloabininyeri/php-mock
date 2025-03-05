@@ -313,6 +313,10 @@ readonly class MockMethodBehaviors
         $this->mockMethod->always($closure);
     }
 
+    /**
+     * @param string $logFile
+     * @return void
+     */
     public function log(string $logFile): void
     {
         $this->always(function (array $args) use ($logFile) {
@@ -326,7 +330,6 @@ readonly class MockMethodBehaviors
                 json_encode($args['returnValue'], JSON_THROW_ON_ERROR)
             );
 
-            $logFile = 'mock_test.log';
             $logDirectory = dirname($logFile);
 
             if (!is_dir($logDirectory) && !mkdir($logDirectory, 0755, true) && !is_dir($logDirectory)) {
