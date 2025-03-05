@@ -40,7 +40,7 @@ class MockClassGenerator extends MockMethodOverrideGenerator
             $mockCode .= $defineMockFactory;
             $mockCode.="\$mockFactory->getMockMethod('object.on.created')(\$this,\$params=[]);\n";
         }
-
+        $mockCode.= "            \$mockFactory->setMockInstance(\$this);";
         $mockCode .= "    }\n";
 
 

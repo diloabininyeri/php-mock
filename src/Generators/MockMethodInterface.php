@@ -44,4 +44,9 @@ interface MockMethodInterface
      * @return int
      */
     public function getCallCount(string $methodName): int;
+
+    /**
+     * @return ?object
+     */
+    public function getMockInstance():?object;
 }

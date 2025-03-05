@@ -3,10 +3,12 @@
 namespace Zeus\Mock\Mock;
 
 use Closure;
+use ReflectionClass;
 use Throwable;
 use Zeus\Mock\Exceptions\AtLeastMethodException;
 use Zeus\Mock\Exceptions\AtMostMethodException;
 use Zeus\Mock\Exceptions\NeverMethodException;
+use Zeus\Mock\Exceptions\SpyMethodException;
 use Zeus\Mock\Exceptions\WithArgsMethodException;
 use Zeus\Mock\Exceptions\WithArgumentMismatchException;
 
@@ -124,9 +126,14 @@ readonly class MethodCountRules
     public function withArgs(string $methodName, array $arguments, mixed $response): void
     {
         $this->mockMethod->add($methodName, function (...$actualArgs) use ($arguments, $response, $methodName) {
+
+            $mockInstance = null;
+            if ($this->mockMethod->getMockInstance()) {
+                $mockInstance = array_pop($actualArgs);
+            }
             if ($actualArgs === $arguments) {
                 if ($response instanceof Closure) {
-                    return $response(...$actualArgs);
+                    return $this->bindMockInstanceToResponseClosure($mockInstance, $response, $actualArgs);
                 }
                 return $response;
             }
@@ -184,7 +191,14 @@ readonly class MethodCountRules
     public function withArgumentsMatching(string $methodName, callable $argumentMatcher, mixed $response): void
     {
         $this->mockMethod->add($methodName, function (...$args) use ($argumentMatcher, $response, $methodName) {
+            $mockInstance = $this->mockMethod->getMockInstance();
+            if ($mockInstance) {
+                array_pop($args);
+            }
             if ($argumentMatcher(...$args)) {
+                if (is_callable($response)) {
+                    return $this->bindMockInstanceToResponseClosure($mockInstance, $response, $args);
+                }
                 return $response;
             }
             throw new WithArgumentMismatchException("Arguments don't match for method $methodName.");
@@ -217,5 +231,55 @@ readonly class MethodCountRules
             }
             return $response;
         });
+    }
+
+    /**
+     * @param string $methodName
+     * @param mixed $response
+     * @return void
+     */
+    public function spyMethod(string $methodName, mixed $response): void
+    {
+        $this->mockMethod->add($methodName, function (...$args) use ($response, $methodName) {
+            if (empty($this->mockMethod->getMockInstance())) {
+                throw new SpyMethodException("the $methodName doesn't support spy method,because its a method of the interface");
+            }
+            $reflection = new ReflectionClass($this->mockMethod->getMockInstance());
+            $parentClass = $reflection->getParentClass();
+
+            if ($parentClass && $parentClass->hasMethod($methodName)) {
+                $method = $parentClass->getMethod($methodName);
+                $method->invoke($this->mockMethod->getMockInstance(), ...$args);
+            }
+
+            if (is_callable($response)) {
+                return $response(...$args);
+            }
+            return $response;
+        });
+
+    }
+
+    private function when(bool $condition, Closure $ifStatement, Closure $elseStatement): mixed
+    {
+        if ($condition) {
+            return $ifStatement();
+        }
+        return $elseStatement();
+    }
+
+    /**
+     * @param object $mockInstance
+     * @param Closure $response
+     * @param array $actualArgs
+     * @return mixed
+     */
+    private function bindMockInstanceToResponseClosure(object $mockInstance, Closure $response, array $actualArgs): mixed
+    {
+        return $this->when(
+            !empty($mockInstance),
+            fn() => $response([...$actualArgs, $mockInstance]),
+            fn() => $response(...$actualArgs),
+        );
     }
 }

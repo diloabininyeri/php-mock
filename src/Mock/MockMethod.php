@@ -36,6 +36,12 @@ class MockMethod implements MockMethodInterface
 
 
     /**
+     * @var object|null
+     */
+    private ?object $mockedObjectInstance=null;
+
+
+    /***
      * @param string $mockTestName
      * @param bool $debug
      */
@@ -58,6 +64,16 @@ class MockMethod implements MockMethodInterface
 
     /**
      * @noinspection PhpUnused
+     * @param object $mockInstance
+     * @return void
+     */
+    public function setMockInstance(object $mockInstance): void
+    {
+        $this->mockedObjectInstance = $mockInstance;
+    }
+
+    /**
+     * @noinspection PhpUnused
      * @param string $methodName
      * @param array $arguments
      * @return mixed
@@ -69,6 +85,10 @@ class MockMethod implements MockMethodInterface
         if (!$this->hasMethodMock($methodName)) {
             throw new MockMethodNotFoundException("Method $methodName not mocked.");
         }
+        if ($this->mockedObjectInstance) {
+            $arguments[] = $this->mockedObjectInstance;
+        }
+
         $returnValue = call_user_func_array($this->methods[$methodName], $arguments);
         $this->incrementCount($methodName);
         $this->debuggingMethod($methodName, $arguments, $returnValue);
@@ -107,9 +127,9 @@ class MockMethod implements MockMethodInterface
      * @param mixed $response
      * @return $this
      */
-    public function add(string $name,mixed $response):self
+    public function add(string $name, mixed $response): self
     {
-       return $this->mockMethod($name, $response);
+        return $this->mockMethod($name, $response);
     }
 
     /**
@@ -166,12 +186,13 @@ class MockMethod implements MockMethodInterface
      * @param mixed $return
      * @return void
      */
-    public function addIfNotDefined(string $methodName,mixed $return): void
+    public function addIfNotDefined(string $methodName, mixed $return): void
     {
         if (!$this->hasMethodMock($methodName)) {
             $this->mockMethod($methodName, $return);
         }
     }
+
     /**
      * @param Closure $closure
      * @return void
@@ -181,6 +202,14 @@ class MockMethod implements MockMethodInterface
         $this->onceMode = true;
         $closure($this);
         $this->onceMode = false;
+    }
+
+    /***
+     * @return object|null
+     */
+    public function getMockInstance(): ?object
+    {
+        return $this->mockedObjectInstance;
     }
 }
 
