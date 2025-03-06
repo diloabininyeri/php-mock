@@ -7,6 +7,7 @@ use RuntimeException;
 use Throwable;
 use Zeus\Mock\Exceptions\AtLeastMethodException;
 use Zeus\Mock\Exceptions\AtMostMethodException;
+use Zeus\Mock\Exceptions\MaxRetriedException;
 use Zeus\Mock\Exceptions\NeverMethodException;
 use Zeus\Mock\Exceptions\TimeoutException;
 use Zeus\Mock\Exceptions\WithArgsMethodException;
@@ -324,6 +325,17 @@ readonly class MockMethodBehaviors
     }
 
     /**
+     * @param array $methods
+     * @param Closure $handle
+     * @return void
+     */
+    public function monitoringMethods(array $methods,Closure $handle): void
+    {
+        foreach ($methods as $method) {
+            $this->monitoringMethod($method, $handle);
+        }
+    }
+    /**
      * @param string $logFile
      * @return void
      */
@@ -347,6 +359,29 @@ readonly class MockMethodBehaviors
             }
 
             file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+        });
+    }
+
+    /**
+     * @param int $maxAttempts
+     * @param string $methodName
+     * @param mixed $return
+     * @return void
+     */
+    public function retry(int $maxAttempts,string $methodName,mixed $return):void
+    {
+        $this->mockMethod->add($methodName,function (...$args) use ($methodName,$maxAttempts,$return){
+            $counter = 0;
+            while($counter < $maxAttempts){
+                try{
+                    return $this->resolveResponseWithSideEffect($return,args: $args);
+                } catch(Throwable){
+                    $counter++;
+                    usleep(1000);
+                }
+            }
+            throw new MaxRetriedException("Method '$methodName' failed after $maxAttempts attempts.");
+
         });
     }
 

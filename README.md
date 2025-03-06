@@ -1,16 +1,21 @@
 # MockFactory
 
-The `MockObjectFactory` class allows for the dynamic creation of mock objects for classes or interfaces, which can be useful in unit testing or when you want to simulate the behavior of an object. This is achieved through method mocking, where you can override methods to return predefined results for testing purposes.
+The `MockObjectFactory` class allows for the dynamic creation of mock objects for classes or interfaces, which can be
+useful in unit testing or when you want to simulate the behavior of an object. This is achieved through method mocking,
+where you can override methods to return predefined results for testing purposes.
 
 ## Features
 
 - **Mock any class or interface:** Create mock objects for both classes and interfaces dynamically.
 - **Method mocking:** Override methods with custom behaviors, defined via closures.
-- **Supports class inheritance:** The mock objects will inherit from the original class, allowing you to test behavior as if the real object was used.
-- **Supports interface implementation:** If the target is an interface, it will generate a mock implementing the interface.
+- **Supports class inheritance:** The mock objects will inherit from the original class, allowing you to test behavior
+  as if the real object was used.
+- **Supports interface implementation:** If the target is an interface, it will generate a mock implementing the
+  interface.
 - **Flexible mock behavior:** Customize method returns and behaviors for specific testing scenarios.
 
 ## Installation
+
 ```console
 composer require zeus/mock
 ```
@@ -51,7 +56,9 @@ $mockFactory->mockMethod('log', fn($message) =>print 'mocked log: ' . $message);
 echo $mockLogger->log('Test');  // Outputs 'mocked log: Test'
 
 ```
+
 **Mocking a Service Class with Dependencies**
+
 ```php
 
 class DatabaseService {
@@ -89,6 +96,7 @@ $mockDatabaseService->saveData('Test Data');  // Will output 'mocked log: Data s
 
 The MockFactory ensures that type hinting is respected in the mock classes.
 For example, if a method expects a specific type, the mock will follow that expectation.
+
 ```php
 class SomeService {
     public function processData(array $data): int {
@@ -116,14 +124,17 @@ if ($mockService instanceof SomeService) {
 
 **Benefits of Type Hinting in Mocks**
 
-**Avoid type-related issues**: Ensures the mock correctly implements method signatures, avoiding errors caused by incorrect argument types.
+**Avoid type-related issues**: Ensures the mock correctly implements method signatures, avoiding errors caused by
+incorrect argument types.
 
-**Seamless integration**: Your tests will integrate with the actual system as expected without concerns for type mismatch.
+**Seamless integration**: Your tests will integrate with the actual system as expected without concerns for type
+mismatch.
 Method Mocking and Custom Behavior
 
 **Method Mocking and Custom Behavior**
 
 You can mock specific methods using closures that define the behavior you need for testing.
+
 ```php
 $mockFactory->mockMethod('methodName', fn($arg1, $arg2) => 'custom result');
 
@@ -178,7 +189,9 @@ $mockDatabaseService->saveData('Test Data');  // Outputs 'mocked log: Data saved
 
 
 ```
-This example class shows how to create mocks for both interfaces and concrete classes, including the use of mocked methods, 
+
+This example class shows how to create mocks for both interfaces and concrete classes, including the use of mocked
+methods,
 type hinting, and checking instance types using `instanceof`.
 
 ```php
@@ -205,11 +218,14 @@ echo get_name(new PersonInterface());//Dilo surucu
 echo get_name($mockPerson);//Mocked Person
 var_dump($mockPerson instanceof PersonInterface); //true
 ```
+
 ### MockFactory - Mocking Interfaces Example
 
 ### Overview
 
-MockFactory is a powerful tool for mocking interfaces in PHP, allowing you to create mock instances and customize their behavior for unit testing. It ensures that mocked objects adhere to the expected type and guarantees compatibility with type hinting and `instanceof` checks.
+MockFactory is a powerful tool for mocking interfaces in PHP, allowing you to create mock instances and customize their
+behavior for unit testing. It ensures that mocked objects adhere to the expected type and guarantees compatibility with
+type hinting and `instanceof` checks.
 
 ### Example Usage - Mocking Interfaces
 
@@ -238,8 +254,11 @@ function get_person(PersonInterface $person): string
 
 echo get_person($personService); // dilo surucu
 ```
+
 ### Debug The code
+
 There is a usage to see what kind of code the MockFactory class produces, this also allows you to debug it
+
 ```php
 interface MYInterface
 {
@@ -264,6 +283,7 @@ class CustomClassName implements MYInterface {
 ```
 
 ### Mock functions
+
 Yes, this section allows you to mock php in-built functions that will allow you to do amazing things,
 for example, let's mock the sleep function in the example.
 
@@ -293,7 +313,9 @@ $mockFunction->endScope();
 sleep(1);//it'll do wait for 1 second because out of the scope
 echo time();//it'll return the real time because it's out of the scope
 ```
+
 or short syntax, Return value can be added to mock function in two ways, type 1 and type 2.
+
 ```php
 
 $mockFunction = new ScopedFunctionMocker();
@@ -305,8 +327,11 @@ $mockFunction->add('date',function (){
     return '2011'
 });
 ```
+
 ### Scope management
-Sometimes we may want to use mock function for objects. Here is an example; we can determine the scope area with the scope method.
+
+Sometimes we may want to use mock function for objects. Here is an example; we can determine the scope area with the
+scope method.
 
 ```php
 
@@ -339,7 +364,9 @@ $mock->endScope();
 
 echo new Date()->now(); //not 100,its return now
 ```
+
 ### the runWithMock method in the MockFunction object
+
 This method defines functions in your mock object and overrides them with functions, like pulling a rabbit out of a hat.
 
 ```php
@@ -368,6 +395,7 @@ echo $mock->runWithmock(new Date(), function (Date $date) {
     return $date->now();
 }); //100
 ```
+
 ### Test with PDO object
 
 without database connection, Yes, you are a little surprised.
@@ -440,9 +468,11 @@ function fetch_data(PDO $PDO):array
 $data=fetch_data($mockPdo);
 print_r($data);////['id' => 1, 'name' => 'Dilo Surucu']
 ```
+
 **onMockInstanceCreated**
 
 This method is triggered when the object is instantiated.
+
 ```php
 
 $mockMethod = new MockMethod();
@@ -465,7 +495,9 @@ $mockFactory
     ->createMock(Date::class, ['a' => 1]);
 
 ```
+
 You can get the parameters sent to the constructor as soon as it is instanced.
+
 ```php
 
 $mockMethod = new MockMethod();
@@ -481,7 +513,9 @@ $dateInstance = $mockFactory->createMock(Date::class, ['date' => '2022-12-12'], 
 ```
 
 ### Count called methods
+
 In this section, I show how to use the getCallCount method to get how many times a method has been called.
+
 ```php
 
 $mockMethod = new MockMethod();
@@ -493,8 +527,11 @@ $dateInstance->getDate(12, 2015);
 echo $mockMethod->getCallCount('getDate');//2
 
 ```
+
 ### number of mocked function calls
+
 We can get how many times the mocked function was called, inside the scope, outside the scope and in total.
+
 ```php
 $mockFunction = new ScopedFunctionMocker();
 
@@ -519,8 +556,11 @@ $mockFunction = new ScopedFunctionMocker();
  
  $mockFunction->getTotalCount('time'); //5
 ```
+
 ### The restore mock function
+
 You can convert a mock function to php's original function, that is, restore it.
+
 ```php
 $mockFunction = new ScopedFunctionMocker();
 
@@ -537,7 +577,9 @@ echo $date->now();  //2025-02-28, its return the real value of date function
 
 $mockFunction->endScope();
 ```
+
 or
+
 ```php
 $mockFunction = new ScopedFunctionMocker();
 $mockFunction->addIfNotDefined('date', '2010-01-01');
@@ -550,8 +592,10 @@ $mockFunction->runWithMock(new Date(), function (Date $date) use ($mockFunction)
 ```
 
 ### the once for the mock functions
+
 You may want mock functions to run only once.
 Here is the simple usage
+
 ```php
 $mockFunction = new ScopedFunctionMocker();
 
@@ -575,9 +619,12 @@ echo date('y-m-d'); //2025-02-28, it will work,because it's out of the scope
 echo time(); //it will work and will return the real time
 
 ```
+
 ### side effects
+
 We can make mock functions return a different value each time they are called.
 It will be enough to define a simple array and send it as a parameter.
+
 ```php
 
 namespace App;
@@ -605,7 +652,9 @@ $mockFunction->runWithMock(new Date(), function (Date $date) {
 });
 
 ```
+
 **for the MockFactory**
+
 ```php
 $mockFactory = new MockObjectFactory();
 $mockFactory->addConsecutive('now', ['2012-10-9', '2012-10-10', '2012-10-11']);
@@ -617,8 +666,10 @@ echo $dateInstance->now(); //2012-10-10
 echo $dateInstance->now(); //2012-10-11
 
 ```
+
 **The once method in the MockFactory ande MockMethod**
 Used to guarantee that a method is executed only once, and throws an exception if multiple invocations are attempted.
+
 ```php
 $mockFactory = new MockObjectFactory();
 $mockFactory->once(function (MockMethod $method) {
@@ -630,8 +681,10 @@ $dateInstance = $mockFactory->createMock(Date::class);
 $dateInstance->now();
 $dateInstance->now(); //it will throw an exception, because we allowed to this method to just once 
 ```
+
 **The never method in the MockFactory ande MockMethod**
 This is a script to ensure that a method is never called during testing and throws an exception even if it is called.
+
 ```php
 $mockFactory = new MockObjectFactory();
 
@@ -647,8 +700,11 @@ function test(Date $date):void
 test($date);
 
 ```
+
 ***Limiting calls***
-You can specify the maximum number of times the methods are called. For example, let's write a method that runs at most three times.
+You can specify the maximum number of times the methods are called. For example, let's write a method that runs at most
+three times.
+
 ```php
 $mockFactory = new \Zeus\Mock\MockObjectFactory();
 
@@ -669,9 +725,11 @@ echo $dateInstance->now(); // AtMostMethodException: Method now can be called on
 ```
 
 ### logging and tracking the mock methods
+
 You can listen to all incoming events with mock methods,
 we do this with the `always` method, this takes a closure as a parameter, here is an example
 and also for logging, it is enough to give the path of a simple log file
+
 ```php
 $mockObjectFactory = new MockObjectFactory();
 
@@ -699,9 +757,12 @@ $dateInstance = $mockObjectFactory->createMock(Date::class);
 $dateInstance->now();
 
 ```
+
 ### Monitoring a method
+
 We can monitor a mock method, for this we use the `monitoringMethod`, here is an example.
 We will monitor this example `now` method
+
 ```php
 
 $mockObjectFactory = new MockObjectFactory();
@@ -729,4 +790,18 @@ $mockObjectFactory->monitoringMethod('now', function (array $args){
 $dateInstance = $mockObjectFactory->createMock(Date::class);
 
 echo $dateInstance->now(); //2025
+```
+
+### Retrying a method if it fails
+
+```php
+$mockObjectFactory = new MockObjectFactory();
+
+$mockObjectFactory->retry(maxAttempts:3,methodName:'now',return:function (){
+    return 5/0;
+});
+
+$dateInstance = $mockObjectFactory->createMock(Date::class);
+
+echo $dateInstance->now(); 
 ```
