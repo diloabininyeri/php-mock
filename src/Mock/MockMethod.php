@@ -56,6 +56,12 @@ class MockMethod implements MockMethodInterface
     private ?string $originalClassName = null;
 
 
+    /**
+     * @var array<string,Closure[]>
+     */
+    private array $monitorMethods = [];
+
+
     /***
      * @param string $mockTestName
      * @param bool $debug
@@ -110,6 +116,7 @@ class MockMethod implements MockMethodInterface
         $this->invokeAlwaysMethods(
             compact('returnValue', 'arguments', 'methodName')
         );
+        $this->invokeMonitorMethod($methodName, $arguments, $returnValue);
         return $returnValue;
     }
 
@@ -289,6 +296,37 @@ class MockMethod implements MockMethodInterface
         $reflectionObject = new ReflectionObject($this->mockedObjectInstance);
         $this->originalClassName = $reflectionObject->getParentClass()->getName();
         return $this->originalClassName;
+    }
+
+    /**
+     * @param string $methodName
+     * @param Closure $closure
+     * @return void
+     */
+    public function monitorMethod(string $methodName, Closure $closure): void
+    {
+        $this->monitorMethods[$methodName][] = $closure;
+    }
+
+    /**
+     * @param string $methodName
+     * @param array $arguments
+     * @param mixed $returnValue
+     * @return void
+     */
+    private function invokeMonitorMethod(string $methodName, array $arguments, mixed $returnValue):void
+    {
+        if (!isset($this->monitorMethods[$methodName])) {
+            return;
+        }
+
+        $mockInstance = $this->getParentClassName();
+        array_pop($arguments);
+        foreach ($this->monitorMethods[$methodName] as $monitor) {
+            $monitor(
+                compact('mockInstance','methodName', 'arguments','returnValue')
+            );
+        }
     }
 }
 

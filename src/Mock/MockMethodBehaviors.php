@@ -314,6 +314,16 @@ readonly class MockMethodBehaviors
     }
 
     /**
+     * @param string $methodName
+     * @param Closure $closure
+     * @return void
+     */
+    public function monitoringMethod(string $methodName, Closure $closure): void
+    {
+        $this->mockMethod->monitorMethod($methodName, $closure);
+    }
+
+    /**
      * @param string $logFile
      * @return void
      */

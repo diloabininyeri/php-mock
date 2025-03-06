@@ -699,3 +699,34 @@ $dateInstance = $mockObjectFactory->createMock(Date::class);
 $dateInstance->now();
 
 ```
+### Monitoring a method
+We can monitor a mock method, for this we use the `monitoringMethod`, here is an example.
+We will monitor this example `now` method
+```php
+
+$mockObjectFactory = new MockObjectFactory();
+
+$mockObjectFactory->method('now',function (){
+    return '2025';
+});
+$mockObjectFactory->monitoringMethod('now', function (array $args){
+
+    print_r($args);
+    /**
+    Array
+    (
+        [mockInstance] => Zeus\Mock\Tests\stubs\Date
+        [methodName] => now
+        [arguments] => Array
+        (
+        ) => [mockInstance]
+
+        [returnValue] => 2025
+        )
+     * */
+});
+
+$dateInstance = $mockObjectFactory->createMock(Date::class);
+
+echo $dateInstance->now(); //2025
+```
