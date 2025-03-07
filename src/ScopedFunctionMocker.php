@@ -4,6 +4,7 @@ namespace Zeus\Mock;
 
 use Closure;
 use ReflectionObject;
+use RuntimeException;
 use Zeus\Mock\Exceptions\InternalObjectException;
 use Zeus\Mock\Exceptions\NamespaceNotFoundException;
 use Zeus\Mock\Exceptions\OnceMockFunctionException;
@@ -55,6 +56,12 @@ class ScopedFunctionMocker
      */
     private array $calledCount = [];
 
+
+    /**
+     * @var callable[] $monitoringCallbacks
+     */
+    private array $monitoringCallbacks = [];
+
     /**
      *
      */
@@ -72,7 +79,7 @@ class ScopedFunctionMocker
     public function add(string $name, mixed $returnValue): void
     {
         if ($this->onceMode && !in_array($name, $this->onceFunctions, true)) {
-             $this->onceFunctions[] = $name;
+            $this->onceFunctions[] = $name;
         }
         if (!isset($this->originalFunctions[$name]) && function_exists($name)) {
             $this->originalFunctions[$name] = $name(...);
@@ -133,8 +140,9 @@ class ScopedFunctionMocker
             }
         }
         return $this->executeWithEffect(
-            call_user_func($this->functions[$name], ...$args),
-            fn() => $this->incrementCount($name)
+            $return=call_user_func($this->functions[$name], ...$args),
+            fn() => $this->incrementCount($name),
+            fn() => $this->invokeMonitoringCallbacks($name, $args,$return)
         );
     }
 
@@ -146,8 +154,9 @@ class ScopedFunctionMocker
     private function callGlobalFunction(string $name, mixed ...$args): mixed
     {
         return $this->executeWithEffect(
-            $name(...$args),
-            fn() => $this->incrementCount($name)
+            $return = $name(...$args),
+            fn() => $this->incrementCount($name),
+            fn() => $this->invokeMonitoringCallbacks($name, $args, $return)
         );
     }
 
@@ -194,12 +203,14 @@ class ScopedFunctionMocker
 
     /**
      * @param mixed $returnValue
-     * @param Closure $effect
+     * @param Closure ...$effects
      * @return mixed
      */
-    private function executeWithEffect(mixed $returnValue, Closure $effect): mixed
+    private function executeWithEffect(mixed $returnValue, Closure ...$effects): mixed
     {
-        $effect();
+        foreach ($effects as $effect) {
+            $effect();
+        }
         return $returnValue;
     }
 
@@ -310,12 +321,13 @@ class ScopedFunctionMocker
     }
 
 
-    public function once(Closure $closure):void
+    public function once(Closure $closure): void
     {
         $this->onceMode = true;
         $closure($this);
         $this->onceMode = false;
     }
+
     /**
      * @param string $method
      * @param array $arguments
@@ -331,10 +343,63 @@ class ScopedFunctionMocker
         };
     }
 
-    public function addConsecutive(string $name, array $array):void
+    public function addConsecutive(string $name, array $array): void
     {
-        $this->add($name,function () use (&$array):mixed{
+        $this->add($name, function () use (&$array): mixed {
             return array_shift($array);
         });
+    }
+
+    /**
+     * @param $name
+     * @param array $arguments
+     * @param mixed $return
+     * @return void
+     */
+    private function invokeMonitoringCallbacks($name, array $arguments, mixed $return): void
+    {
+        $args = [
+            'function' => $name,
+            'arguments' => $arguments,
+            'return' => $return,
+        ];
+        foreach ($this->monitoringCallbacks ?? [] as $monitoringCallback) {
+            $monitoringCallback($args);
+        }
+    }
+
+    /**
+     * @param string $logFile
+     * @return void
+     */
+    public function log(string $logFile): void
+    {
+        $this->monitoring(function (array $args) use ($logFile) {
+
+            $logMessage = sprintf(
+                "[%s] %s called with arguments: %s and returned: %s\n",
+                date('Y-m-d H:i:s'),
+                $args['function'],
+                json_encode($args['arguments'], JSON_THROW_ON_ERROR),
+                json_encode($args['return'], JSON_THROW_ON_ERROR)
+            );
+
+            $logDirectory = dirname($logFile);
+
+            if (!is_dir($logDirectory) && !mkdir($logDirectory, 0755, true) && !is_dir($logDirectory)) {
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $logDirectory)); //NOSONAR
+            }
+
+            file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+        });
+    }
+
+    /**
+     * @param callable $handler
+     * @return void
+     */
+    public function monitoring(callable $handler): void
+    {
+        $this->monitoringCallbacks[] = $handler;
     }
 }
