@@ -805,3 +805,39 @@ $dateInstance = $mockObjectFactory->createMock(Date::class);
 
 echo $dateInstance->now(); 
 ```
+## The environment of mock function
+You can set an environment for mock functions, such as stage development or product.
+```php
+<?php
+
+namespace App;
+
+use Zeus\Mock\ScopedFunctionMocker;
+
+require_once 'vendor/autoload.php';
+
+
+
+$scopedFunctionMocker = new ScopedFunctionMocker();
+
+
+$scopedFunctionMocker->addEnvironment('production',function (ScopedFunctionMocker $mocker){
+    $mocker->add('time',100);
+});
+
+$scopedFunctionMocker->addEnvironment('development',function (ScopedFunctionMocker $mocker){
+    $mocker->add('time',200);
+});
+
+
+$scopedFunctionMocker->setEnvironment('development');
+
+$scopedFunctionMocker->scope();//it should be called at the beginning of the setEnvironment method
+
+echo time().PHP_EOL; //200
+$scopedFunctionMocker->setEnvironment('production');
+echo time().PHP_EOL; //100
+$scopedFunctionMocker->endScope();
+
+echo time().PHP_EOL; //real time
+```

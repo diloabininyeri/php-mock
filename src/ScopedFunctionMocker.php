@@ -58,9 +58,12 @@ class ScopedFunctionMocker
 
 
     /**
-     * @var callable[] $monitoringCallbacks
+     * @var array<string,callable> $monitoringCallbacks
      */
     private array $monitoringCallbacks = [];
+
+    private array $environment=[];
+
 
     /**
      *
@@ -70,6 +73,15 @@ class ScopedFunctionMocker
         static::$instances = $this;
     }
 
+    /**
+     * @param string $name
+     * @param callable(ScopedFunctionMocker $mock):void $callback
+     * @return void
+     */
+    public function addEnvironment(string $name,callable $callback):void
+    {
+        $this->environment[$name] = fn()=>$callback($this);
+    }
 
     /**
      * @param string $name
@@ -395,6 +407,27 @@ class ScopedFunctionMocker
     }
 
     /**
+     * @param string $environmentName
+     * @return void
+     */
+    public function setEnvironment(string $environmentName):void
+    {
+        $this->functions = [];
+        $this->environment[$environmentName]();
+    }
+
+    /**
+     * @param string $environmentName
+     * @param Closure $closure
+     * @return void
+     */
+    public function executeInEnvironment(string $environmentName, Closure $closure):void
+    {
+        $this->setEnvironment($environmentName);
+        $closure($this);
+    }
+
+    /**
      * @param callable $handler
      * @return void
      */
@@ -403,3 +436,4 @@ class ScopedFunctionMocker
         $this->monitoringCallbacks[] = $handler;
     }
 }
+
