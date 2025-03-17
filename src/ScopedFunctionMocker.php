@@ -424,7 +424,9 @@ class ScopedFunctionMocker
     public function executeInEnvironment(string $environmentName, Closure $closure):void
     {
         $this->setEnvironment($environmentName);
+        $this->scope($this->getNamespaceFromTrace(debug_backtrace()));
         $closure($this);
+        $this->endScope();
     }
 
     /**

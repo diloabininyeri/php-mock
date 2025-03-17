@@ -841,3 +841,26 @@ $scopedFunctionMocker->endScope();
 
 echo time().PHP_EOL; //real time
 ```
+or
+```php
+$scopedFunctionMocker = new ScopedFunctionMocker();
+
+
+$scopedFunctionMocker->addEnvironment('production',function (ScopedFunctionMocker $mocker){
+    $mocker->add('time',100);
+});
+
+$scopedFunctionMocker->addEnvironment('development',function (ScopedFunctionMocker $mocker){
+    $mocker->add('time',200);
+});
+
+
+$scopedFunctionMocker->executeInEnvironment('development',function (){
+    echo time().PHP_EOL; //200
+});
+
+$scopedFunctionMocker->executeInEnvironment('production',function (){
+    echo time().PHP_EOL; //100
+});
+echo time().PHP_EOL; //real time
+```
