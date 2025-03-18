@@ -15,13 +15,18 @@ use Zeus\Mock\Mock\MockMethod;
  * @mixin MockMethodInterface
  * @mixin MockMethodBehaviors
  */
-readonly class MockObjectFactory
+class MockObjectFactory
 {
     private MockMethodBehaviors $mockMethodBehaviors;
+
+    /**
+     * @var array $environments
+     */
+    private array $environments = [];
     /**
      * @param MockMethodInterface $mockMethod
      */
-    public function __construct(private MockMethodInterface $mockMethod = new MockMethod())
+    public function __construct(private readonly MockMethodInterface $mockMethod = new MockMethod())
     {
         $this->mockMethod->mockMethod('object.on.created', fn(...$args) => null);
         $this->mockMethodBehaviors = new MockMethodBehaviors($this->mockMethod);
@@ -127,5 +132,25 @@ readonly class MockObjectFactory
     public function method(string $methodName, mixed $response): void
     {
         $this->mockMethod($methodName, $response);
+    }
+
+    /**
+     * @param string $environmentName
+     * @param Closure $callback
+     * @return void
+     */
+    public function addEnvironment(string $environmentName,Closure $callback):void
+    {
+        $this->environments[$environmentName] = fn()=>$callback($this);
+    }
+
+    /**
+     * @param string $environmentName
+     * @return void
+     */
+    public function setEnvironment(string $environmentName):void
+    {
+        $this->mockMethod->reset();
+        $this->environments[$environmentName]();
     }
 }

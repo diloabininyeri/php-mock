@@ -328,5 +328,20 @@ class MockMethod implements MockMethodInterface
             );
         }
     }
+
+    /**
+     * @return void
+     */
+    public function reset(): void
+    {
+        $this->callCounts = [];
+        $this->methods = [];
+        $this->debug = null;
+        $this->onceMode = false;
+        $this->mockedObjectInstance = null;
+        $this->alwaysMockMethods = [];
+        $this->originalClassName = null;
+        $this->monitorMethods = [];
+    }
 }
 

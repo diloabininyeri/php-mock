@@ -864,3 +864,23 @@ $scopedFunctionMocker->executeInEnvironment('production',function (){
 });
 echo time().PHP_EOL; //real time
 ```
+### The environment of mock object
+```php
+$mockObjectFactory = new MockObjectFactory();
+
+$mockObjectFactory->addEnvironment('production', function (MockObjectFactory $factory) {
+    $factory->method('getId', 100);
+});
+
+$mockObjectFactory->addEnvironment('development', function (MockObjectFactory $factory) {
+    $factory->method('getId', 200);
+});
+
+$user = $mockObjectFactory->createMock(User::class);
+
+$mockObjectFactory->setEnvironment('production');
+echo $user->getId(); //100
+$mockObjectFactory->setEnvironment('development');
+echo $user->getId(); //200
+
+```
