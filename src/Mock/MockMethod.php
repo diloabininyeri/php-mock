@@ -314,7 +314,7 @@ class MockMethod implements MockMethodInterface
      * @param mixed $returnValue
      * @return void
      */
-    private function invokeMonitorMethod(string $methodName, array $arguments, mixed $returnValue):void
+    private function invokeMonitorMethod(string $methodName, array $arguments, mixed $returnValue): void
     {
         if (!isset($this->monitorMethods[$methodName])) {
             return;
@@ -324,7 +324,7 @@ class MockMethod implements MockMethodInterface
         array_pop($arguments);
         foreach ($this->monitorMethods[$methodName] as $monitor) {
             $monitor(
-                compact('mockInstance','methodName', 'arguments','returnValue')
+                compact('mockInstance', 'methodName', 'arguments', 'returnValue')
             );
         }
     }
@@ -335,7 +335,9 @@ class MockMethod implements MockMethodInterface
     public function reset(): void
     {
         $this->callCounts = [];
-        $this->methods = [];
+        $this->methods = [
+            'object.on.created' => $this->methods['object.on.created']
+        ];
         $this->debug = null;
         $this->onceMode = false;
         $this->mockedObjectInstance = null;
