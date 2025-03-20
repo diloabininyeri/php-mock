@@ -335,7 +335,10 @@ class MockMethod implements MockMethodInterface
     public function reset(): void
     {
         $this->callCounts = [];
+
+        $onCreated = $this->methods['object.on.created'];
         $this->methods = [];
+        $this->methods['object.on.created'] = $onCreated;
         $this->debug = null;
         $this->onceMode = false;
         $this->mockedObjectInstance = null;
